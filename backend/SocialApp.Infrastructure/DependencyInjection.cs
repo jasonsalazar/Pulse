@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SocialApp.Application.Common;
 using SocialApp.Domain.Users;
+using SocialApp.Infrastructure.Authentication;
 using SocialApp.Infrastructure.Persistence;
 
 namespace SocialApp.Infrastructure;
@@ -23,6 +24,10 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+        services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+
+        services.AddScoped<IJwtService, JwtService>();
 
         return services;
     }
