@@ -1,8 +1,11 @@
+using System.Security.Claims;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialApp.Application.Authentication.Commands.Login;
 using SocialApp.Application.Authentication.Commands.RegisterUser;
 using SocialApp.Application.Authentication.DTOs;
+using SocialApp.Application.Authentication.Queries.GetCurrentUser;
 
 namespace SocialApp.Api.Controllers;
 
@@ -62,6 +65,36 @@ public class AuthController(ISender sender) : ControllerBase
             {
                 message = exception.Message
             });
+        }
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<AuthResponse>> Me(
+    CancellationToken cancellationToken)
+    {
+        var userIdValue =
+            User.FindFirstValue(
+                ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userIdValue, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var query = new GetCurrentUserQuery(userId);
+
+            var result = await _sender.Send(
+                query,
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
         }
     }
 }

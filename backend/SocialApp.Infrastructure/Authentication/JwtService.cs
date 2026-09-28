@@ -17,11 +17,11 @@ public class JwtService(IOptions<JwtSettings> settings) : IJwtService
         var claims = new List<Claim>
         {
             new(
-                JwtRegisteredClaimNames.Sub,
+                ClaimTypes.NameIdentifier,
                 user.Id.ToString()),
 
             new(
-                JwtRegisteredClaimNames.Email,
+                ClaimTypes.Email,
                 user.Email),
 
             new(
