@@ -1,0 +1,8 @@
+.ui-error-message {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  background: #fef2f2;
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}

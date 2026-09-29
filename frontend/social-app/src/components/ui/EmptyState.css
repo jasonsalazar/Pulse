@@ -1,0 +1,23 @@
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.ui-empty-state h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.ui-empty-state p {
+  max-width: 400px;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.ui-empty-state-action {
+  margin-top: var(--space-6);
+}

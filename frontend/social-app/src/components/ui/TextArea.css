@@ -1,0 +1,41 @@
+.ui-textarea-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ui-textarea-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.ui-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  resize: vertical;
+  outline: none;
+}
+
+.ui-textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.ui-textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 3px var(--color-primary-light);
+}
+
+.ui-textarea-error {
+  border-color: var(--color-error);
+}
+
+.ui-textarea-error-text {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
