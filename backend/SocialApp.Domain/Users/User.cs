@@ -12,6 +12,12 @@ public class User
 
     public DateTime CreatedAt { get; private set; }
 
+    public string DisplayName { get; private set; } = string.Empty;
+
+    public string Bio { get; private set; } = string.Empty;
+
+    public string? ProfileImageUrl { get; private set; }
+
     private User()
     {
     }
@@ -28,6 +34,10 @@ public class User
         PasswordHash = passwordHash;
 
         CreatedAt = DateTime.UtcNow;
+
+        DisplayName = username;
+        Bio = string.Empty;
+        ProfileImageUrl = null;
     }
 
     public void SetPasswordHash(string passwordHash)
@@ -40,5 +50,26 @@ public class User
         }
 
         PasswordHash = passwordHash;
+    }
+
+    public void UpdateProfile(
+        string displayName,
+        string bio,
+        string? profileImageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            throw new ArgumentException(
+                "Display name cannot be empty.",
+                nameof(displayName));
+        }
+
+        DisplayName = displayName.Trim();
+        Bio = bio?.Trim() ?? string.Empty;
+
+        ProfileImageUrl =
+            string.IsNullOrWhiteSpace(profileImageUrl)
+                ? null
+                : profileImageUrl.Trim();
     }
 }

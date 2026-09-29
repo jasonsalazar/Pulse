@@ -6,6 +6,8 @@ import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./features/auth/LoginPage";
 import RegisterPage from "./features/auth/RegisterPage";
 import HomePage from "./features/auth/HomePage";
+import ProfilePage from "./features/profile/ProfilePage";
+import EditProfilePage from "./features/profile/EditProfilePage";
 
 function App() {
   return (
@@ -18,6 +20,10 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<HomePage />} />
+
+            <Route path="/profile" element={<ProfilePage />} />
+
+            <Route path="/profile/edit" element={<EditProfilePage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/home" replace />} />
