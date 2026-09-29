@@ -1,33 +1,29 @@
-import { useEffect, useState } from "react";
-import { getHealth } from "./api";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-type HealthResponse = {
-  status: string;
-  service: string;
-};
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
+
+import LoginPage from "./features/auth/LoginPage";
+import RegisterPage from "./features/auth/RegisterPage";
+import HomePage from "./features/auth/HomePage";
 
 function App() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    getHealth()
-      .then(setHealth)
-      .catch(() => setError("Could not connect to API"));
-  }, []);
-
   return (
-    <main style={{ padding: 40 }}>
-      <h1>SocialApp</h1>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
 
-      {health && (
-        <p>
-          🟢 {health.service} — {health.status}
-        </p>
-      )}
+          <Route path="/register" element={<RegisterPage />} />
 
-      {error && <p>🔴 {error}</p>}
-    </main>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<HomePage />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

@@ -53,7 +53,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Frontend", policy =>
+    options.AddPolicy("ReactClient", policy =>
     {
         policy
             .WithOrigins("http://localhost:3000")
@@ -66,11 +66,11 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+app.UseCors("ReactClient");
+
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-app.UseCors("Frontend");
 
 app.MapControllers();
 
