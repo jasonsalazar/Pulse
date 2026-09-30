@@ -1,0 +1,29 @@
+.posts-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.posts-page-header h1 {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.posts-page-header p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.posts-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.posts-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+}

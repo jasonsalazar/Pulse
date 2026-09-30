@@ -4,13 +4,13 @@ import { AuthProvider } from "./context/AuthContext";
 
 import LoginPage from "./features/auth/LoginPage";
 import RegisterPage from "./features/auth/RegisterPage";
-import HomePage from "./features/auth/HomePage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AppShell } from "./components/layout";
 
 import ProfilePage from "./features/profile/ProfilePage";
 import EditProfilePage from "./features/profile/EditProfilePage";
+import PostsPage from "./features/posts/PostsPage";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
-              <Route path="/home" element={<HomePage />} />
+              <Route path="/home" element={<PostsPage />} />
 
               <Route path="/profile" element={<ProfilePage />} />
 

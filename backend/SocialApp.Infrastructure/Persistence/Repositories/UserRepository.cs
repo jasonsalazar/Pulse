@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SocialApp.Application.Common;
 using SocialApp.Domain.Users;
 
-namespace SocialApp.Infrastructure.Persistence;
+namespace SocialApp.Infrastructure.Persistence.Repositories;
 
 public class UserRepository(AppDbContext context) : IUserRepository
 {

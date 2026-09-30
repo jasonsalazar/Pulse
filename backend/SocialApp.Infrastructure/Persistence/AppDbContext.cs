@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SocialApp.Domain.Posts;
 using SocialApp.Domain.Users;
 
 namespace SocialApp.Infrastructure.Persistence;
@@ -6,6 +7,8 @@ namespace SocialApp.Infrastructure.Persistence;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
+
+    public DbSet<Post> Posts => Set<Post>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

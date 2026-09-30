@@ -6,6 +6,7 @@ using SocialApp.Application.Common;
 using SocialApp.Domain.Users;
 using SocialApp.Infrastructure.Authentication;
 using SocialApp.Infrastructure.Persistence;
+using SocialApp.Infrastructure.Persistence.Repositories;
 
 namespace SocialApp.Infrastructure;
 
@@ -22,6 +23,8 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IPostRepository, PostRepository>();
 
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
