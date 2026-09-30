@@ -1,0 +1,66 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-header-inner {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.app-logo {
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.app-header-search {
+  width: 320px;
+  margin-left: auto;
+  margin-right: var(--space-6);
+}
+
+.app-header-search input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.app-header-search input:focus {
+  border-color: var(--color-primary);
+}
+
+.app-header-profile {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .app-header-inner {
+    padding: 0 var(--space-4);
+  }
+
+  .app-header-search {
+    display: none;
+  }
+
+  .app-logo {
+    font-size: var(--font-size-lg);
+  }
+
+  .app-header-profile {
+    margin-left: auto;
+  }
+}

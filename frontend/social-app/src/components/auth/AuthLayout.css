@@ -1,0 +1,142 @@
+.auth-layout {
+  display: grid;
+  grid-template-columns: 42% 58%;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+/* ========================================
+   BRAND PANEL
+   ======================================== */
+
+.auth-brand-panel {
+  display: flex;
+  align-items: center;
+  background: var(--color-primary);
+  color: white;
+  padding: var(--space-12);
+}
+
+.auth-brand-content {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.auth-brand-logo {
+  margin-bottom: var(--space-12);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+}
+
+.auth-brand-title {
+  margin: 0;
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  line-height: 1.05;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.04em;
+}
+
+.auth-brand-description {
+  max-width: 420px;
+  margin: var(--space-8) 0 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--font-size-lg);
+  line-height: 1.7;
+}
+
+/* ========================================
+   FORM PANEL
+   ======================================== */
+
+.auth-form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  background: var(--color-background);
+}
+
+.auth-form-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ========================================
+   MOBILE LOGO
+   ======================================== */
+
+.auth-mobile-logo {
+  display: none;
+  margin-bottom: var(--space-8);
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+
+/* ========================================
+   HEADING
+   ======================================== */
+
+.auth-heading {
+  margin-bottom: var(--space-8);
+}
+
+.auth-heading h1 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.auth-heading p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 900px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand-panel {
+    display: none;
+  }
+
+  .auth-form-panel {
+    min-height: 100vh;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .auth-form-container {
+    max-width: 440px;
+  }
+
+  .auth-mobile-logo {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-form-panel {
+    align-items: flex-start;
+    padding-top: var(--space-8);
+  }
+
+  .auth-heading {
+    margin-bottom: var(--space-6);
+  }
+
+  .auth-heading h1 {
+    font-size: var(--font-size-2xl);
+  }
+}
