@@ -3,5 +3,6 @@ namespace SocialApp.Application.Authentication.DTOs;
 public record RegisterRequest(
     string Username,
     string Email,
-    string Password
+    string Password,
+    string ConfirmPassword
 );

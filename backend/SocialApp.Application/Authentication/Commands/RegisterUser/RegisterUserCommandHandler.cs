@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using SocialApp.Application.Authentication.DTOs;
+using SocialApp.Application.Authentication.PasswordValidation;
 using SocialApp.Application.Common;
 using SocialApp.Domain.Users;
 
@@ -18,11 +19,23 @@ public class RegisterUserCommandHandler(
         RegisterUserCommand request,
         CancellationToken cancellationToken)
     {
-        var email = request.Email
-            .Trim()
-            .ToLowerInvariant();
+        var email = request.Email.Trim().ToLowerInvariant();
 
         var username = request.Username.Trim();
+
+        if (request.Password != request.ConfirmPassword)
+        {
+            throw new ArgumentException(
+                "Passwords do not match.");
+        }
+
+        var passwordValidation = PasswordValidator.Validate(request.Password);
+
+        if (!passwordValidation.IsValid)
+        {
+            throw new ArgumentException(
+                string.Join(" ", passwordValidation.Errors));
+        }
 
         var existingEmail =
             await _userRepository.GetByEmailAsync(
@@ -32,7 +45,7 @@ public class RegisterUserCommandHandler(
         if (existingEmail is not null)
         {
             throw new InvalidOperationException(
-                "Email is already registered.");
+                "An account with this email already exists.");
         }
 
         var existingUsername =
@@ -43,27 +56,20 @@ public class RegisterUserCommandHandler(
         if (existingUsername is not null)
         {
             throw new InvalidOperationException(
-                "Username is already taken.");
+                "This username is already taken.");
         }
 
-        var user = new User(
-            username,
-            email,
-            string.Empty);
+        var user = new User(username, email, string.Empty);
 
-        var passwordHash =
-            _passwordHasher.HashPassword(
-                user,
-                request.Password);
+        var passwordHash = _passwordHasher.HashPassword(
+            user,
+            request.Password);
 
         user.SetPasswordHash(passwordHash);
 
-        await _userRepository.AddAsync(
-            user,
-            cancellationToken);
+        await _userRepository.AddAsync(user, cancellationToken);
 
-        await _userRepository.SaveChangesAsync(
-            cancellationToken);
+        await _userRepository.SaveChangesAsync(cancellationToken);
 
         return new AuthResponse(
             user.Id,

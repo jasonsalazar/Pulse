@@ -6,5 +6,6 @@ namespace SocialApp.Application.Authentication.Commands.RegisterUser;
 public record RegisterUserCommand(
     string Username,
     string Email,
-    string Password
+    string Password,
+    string ConfirmPassword
 ) : IRequest<AuthResponse>;

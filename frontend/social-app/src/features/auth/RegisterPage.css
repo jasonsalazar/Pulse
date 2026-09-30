@@ -4,6 +4,22 @@
   gap: var(--space-5);
 }
 
+.register-password-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.confirm-password-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.password-match-error {
+  color: var(--color-error);
+  font-size: var(--font-size-xs);
+}
+
 .auth-footer {
   display: flex;
   align-items: center;

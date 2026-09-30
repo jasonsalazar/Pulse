@@ -25,13 +25,21 @@ public class AuthController(ISender sender) : ControllerBase
             var command = new RegisterUserCommand(
                 request.Username,
                 request.Email,
-                request.Password);
+                request.Password,
+                request.ConfirmPassword);
 
             var result = await _sender.Send(
                 command,
                 cancellationToken);
 
             return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
         catch (InvalidOperationException exception)
         {
