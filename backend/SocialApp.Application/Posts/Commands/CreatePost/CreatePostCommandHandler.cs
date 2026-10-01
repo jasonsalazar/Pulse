@@ -7,11 +7,15 @@ namespace SocialApp.Application.Posts.Commands.CreatePost;
 
 public class CreatePostCommandHandler(
     IPostRepository postRepository,
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    IPostLikeRepository likeRepository,
+    ICommentRepository commentRepository)
         : IRequestHandler<CreatePostCommand, PostResponse>
 {
     private readonly IPostRepository _postRepository = postRepository;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPostLikeRepository _likeRepository = likeRepository;
+    private readonly ICommentRepository _commentRepository = commentRepository;
 
     public async Task<PostResponse> Handle(
         CreatePostCommand request,
@@ -41,7 +45,10 @@ public class CreatePostCommandHandler(
             user.ProfileImageUrl,
             post.Content,
             post.CreatedAt,
-            post.UpdatedAt
+            post.UpdatedAt,
+            0,
+            0,
+            false
         );
     }
 }

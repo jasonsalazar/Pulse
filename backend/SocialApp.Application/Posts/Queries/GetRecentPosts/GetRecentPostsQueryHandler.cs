@@ -6,13 +6,17 @@ namespace SocialApp.Application.Posts.Queries.GetRecentPosts;
 
 public class GetRecentPostsQueryHandler(
     IPostRepository postRepository,
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    IPostLikeRepository likeRepository,
+    ICommentRepository commentRepository)
         : IRequestHandler<
         GetRecentPostsQuery,
         IReadOnlyList<PostResponse>>
 {
     private readonly IPostRepository _postRepository = postRepository;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPostLikeRepository _likeRepository = likeRepository;
+    private readonly ICommentRepository _commentRepository = commentRepository;
 
     public async Task<IReadOnlyList<PostResponse>> Handle(
         GetRecentPostsQuery request,
@@ -40,6 +44,19 @@ public class GetRecentPostsQueryHandler(
                 continue;
             }
 
+            var likeCount = await _likeRepository.CountAsync(
+                post.Id,
+                cancellationToken);
+
+            var commentCount = await _commentRepository.CountByPostIdAsync(
+                post.Id,
+                cancellationToken);
+
+            var isLiked = await _likeRepository.ExistsAsync(
+                post.Id,
+                request.CurrentUserId,
+                cancellationToken);
+
             responses.Add(
                 new PostResponse(
                     post.Id,
@@ -49,7 +66,10 @@ public class GetRecentPostsQueryHandler(
                     user.ProfileImageUrl,
                     post.Content,
                     post.CreatedAt,
-                    post.UpdatedAt
+                    post.UpdatedAt,
+                    likeCount,
+                    commentCount,
+                    isLiked
                 )
             );
         }

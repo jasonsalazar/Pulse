@@ -6,13 +6,17 @@ namespace SocialApp.Application.Posts.Queries.GetUserPosts;
 
 public class GetUserPostsQueryHandler(
     IPostRepository postRepository,
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    IPostLikeRepository likeRepository,
+    ICommentRepository commentRepository)
         : IRequestHandler<
         GetUserPostsQuery,
         IReadOnlyList<PostResponse>>
 {
     private readonly IPostRepository _postRepository = postRepository;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPostLikeRepository _likeRepository = likeRepository;
+    private readonly ICommentRepository _commentRepository = commentRepository;
 
     public async Task<IReadOnlyList<PostResponse>> Handle(
         GetUserPostsQuery request,
@@ -32,19 +36,40 @@ public class GetUserPostsQueryHandler(
             request.UserId,
             cancellationToken);
 
-        return [.. posts
-            .Select(post =>
+        var responses = new List<PostResponse>();
+
+        foreach (var post in posts)
+        {
+            var likeCount = await _likeRepository.CountAsync(
+                post.Id,
+                cancellationToken);
+
+            var commentCount = await _commentRepository.CountByPostIdAsync(
+                post.Id,
+                cancellationToken);
+
+            var isLiked = await _likeRepository.ExistsAsync(
+                post.Id,
+                request.CurrentUserId,
+                cancellationToken);
+
+            responses.Add(
                 new PostResponse(
                     post.Id,
-                    user.Id,
+                    post.UserId,
                     user.Username,
                     user.DisplayName,
                     user.ProfileImageUrl,
                     post.Content,
                     post.CreatedAt,
-                    post.UpdatedAt
+                    post.UpdatedAt,
+                    likeCount,
+                    commentCount,
+                    isLiked
                 )
-            )
-        ];
+            );
+        }
+
+        return responses;
     }
 }

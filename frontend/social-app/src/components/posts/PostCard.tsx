@@ -1,9 +1,12 @@
 import { useState } from "react";
 
 import { Avatar, Button, Card } from "../ui";
+
+import Comments from "./Comments";
+
 import { useAuth } from "../../context/AuthContext";
 
-import { deletePost } from "../../services/postService";
+import { togglePostLike, deletePost } from "../../services/postService";
 
 import type { Post } from "../../types/post";
 
@@ -17,9 +20,40 @@ interface PostCardProps {
 export default function PostCard({ post, onDeleted }: PostCardProps) {
   const { user } = useAuth();
 
+  const [isLiked, setIsLiked] = useState(post.isLikedByCurrentUser);
+
+  const [likeCount, setLikeCount] = useState(post.likeCount);
+
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+
+  const [showComments, setShowComments] = useState(false);
+
+  const [isLiking, setIsLiking] = useState(false);
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwner = user?.userId === post.userId;
+
+  const handleLike = async () => {
+    if (isLiking) {
+      return;
+    }
+
+    try {
+      setIsLiking(true);
+
+      const result = await togglePostLike(post.postId);
+
+      setIsLiked(result.isLiked);
+      setLikeCount(result.likeCount);
+    } catch (error) {
+      window.alert(
+        error instanceof Error ? error.message : "Unable to update like.",
+      );
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -79,14 +113,27 @@ export default function PostCard({ post, onDeleted }: PostCardProps) {
       <div className="post-content">{post.content}</div>
 
       <div className="post-actions">
-        <button type="button" disabled className="post-action">
-          ♡ Like
+        <button
+          type="button"
+          className={`post-action ${isLiked ? "post-action-liked" : ""}`}
+          onClick={handleLike}
+          disabled={isLiking}
+        >
+          {isLiked ? "♥" : "♡"} {likeCount}
         </button>
 
-        <button type="button" disabled className="post-action">
-          ○ Comment
+        <button
+          type="button"
+          className="post-action"
+          onClick={() => setShowComments((current) => !current)}
+        >
+          ○ {commentCount}
         </button>
       </div>
+
+      {showComments && (
+        <Comments postId={post.postId} onCountChanged={setCommentCount} />
+      )}
     </Card>
   );
 }

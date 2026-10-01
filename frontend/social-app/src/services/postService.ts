@@ -1,5 +1,5 @@
 import { apiRequest } from "./api";
-import type { CreatePostRequest, Post } from "../types/post";
+import type { CreatePostRequest, Post, PostLikeResponse } from "../types/post";
 
 export async function getRecentPosts(take = 20) {
   return apiRequest<Post[]>(`/posts?take=${take}`);
@@ -23,5 +23,11 @@ export async function createPost(request: CreatePostRequest) {
 export async function deletePost(postId: string) {
   return apiRequest<void>(`/posts/${postId}`, {
     method: "DELETE",
+  });
+}
+
+export async function togglePostLike(postId: string) {
+  return apiRequest<PostLikeResponse>(`/posts/${postId}/like`, {
+    method: "POST",
   });
 }

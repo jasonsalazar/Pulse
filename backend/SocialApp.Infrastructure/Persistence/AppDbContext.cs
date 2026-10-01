@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using SocialApp.Domain.Comments;
+using SocialApp.Domain.Likes;
 using SocialApp.Domain.Posts;
 using SocialApp.Domain.Users;
 
@@ -9,6 +11,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
 
     public DbSet<Post> Posts => Set<Post>();
+
+    public DbSet<PostLike> PostLikes => Set<PostLike>();
+
+    public DbSet<Comment> Comments => Set<Comment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -6,11 +6,15 @@ namespace SocialApp.Application.Posts.Queries.GetPost;
 
 public class GetPostQueryHandler(
     IPostRepository postRepository,
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    IPostLikeRepository likeRepository,
+    ICommentRepository commentRepository)
         : IRequestHandler<GetPostQuery, PostResponse>
 {
     private readonly IPostRepository _postRepository = postRepository;
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPostLikeRepository _likeRepository = likeRepository;
+    private readonly ICommentRepository _commentRepository = commentRepository;
 
     public async Task<PostResponse> Handle(
         GetPostQuery request,
@@ -36,6 +40,19 @@ public class GetPostQueryHandler(
                 "Post author was not found.");
         }
 
+        var likeCount = await _likeRepository.CountAsync(
+            post.Id,
+            cancellationToken);
+
+        var commentCount = await _commentRepository.CountByPostIdAsync(
+            post.Id,
+            cancellationToken);
+
+        var isLiked = await _likeRepository.ExistsAsync(
+            post.Id,
+            request.CurrentUserId,
+            cancellationToken);
+
         return new PostResponse(
             post.Id,
             user.Id,
@@ -44,7 +61,10 @@ public class GetPostQueryHandler(
             user.ProfileImageUrl,
             post.Content,
             post.CreatedAt,
-            post.UpdatedAt
+            post.UpdatedAt,
+            likeCount,
+            commentCount,
+            isLiked
         );
     }
 }

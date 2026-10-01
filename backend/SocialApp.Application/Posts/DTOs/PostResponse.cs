@@ -8,5 +8,8 @@ public record PostResponse(
     string? ProfileImageUrl,
     string Content,
     DateTime CreatedAt,
-    DateTime? UpdatedAt
+    DateTime? UpdatedAt,
+    int LikeCount,
+    int CommentCount,
+    bool IsLikedByCurrentUser
 );

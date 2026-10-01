@@ -2,6 +2,8 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialApp.Application.Likes.Commands.TogglePostLike;
+using SocialApp.Application.Likes.DTOs;
 using SocialApp.Application.Posts.Commands.CreatePost;
 using SocialApp.Application.Posts.Commands.DeletePost;
 using SocialApp.Application.Posts.DTOs;
@@ -59,7 +61,14 @@ public class PostsController(ISender sender) : ControllerBase
         [FromQuery] int take = 20,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetRecentPostsQuery(take);
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetRecentPostsQuery(userId.Value, take);
 
         var result = await _sender.Send(query, cancellationToken);
 
@@ -73,7 +82,16 @@ public class PostsController(ISender sender) : ControllerBase
     {
         try
         {
-            var query = new GetPostQuery(postId);
+            var currentUserId = GetCurrentUserId();
+
+            if (currentUserId is null)
+            {
+                return Unauthorized();
+            }
+
+            var query = new GetPostQuery(
+                postId,
+                currentUserId.Value);
 
             var result = await _sender.Send(
                 query,
@@ -99,7 +117,16 @@ public class PostsController(ISender sender) : ControllerBase
     {
         try
         {
-            var query = new GetUserPostsQuery(userId);
+            var currentUserId = GetCurrentUserId();
+
+            if (currentUserId is null)
+            {
+                return Unauthorized();
+            }
+
+            var query = new GetUserPostsQuery(
+                userId,
+                currentUserId.Value);
 
             var result = await _sender.Send(query, cancellationToken);
 
@@ -144,6 +171,39 @@ public class PostsController(ISender sender) : ControllerBase
         catch (UnauthorizedAccessException)
         {
             return Forbid();
+        }
+    }
+
+    [HttpPost("{postId:guid}/like")]
+    public async Task<ActionResult<PostLikeResponse>> ToggleLike(
+    Guid postId,
+    CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var command = new TogglePostLikeCommand(
+                postId,
+                userId.Value);
+
+            var result = await _sender.Send(
+                command,
+                cancellationToken);
+
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
         }
     }
 
