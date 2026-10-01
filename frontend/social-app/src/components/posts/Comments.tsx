@@ -13,6 +13,7 @@ import {
 import type { Comment } from "../../types/post";
 
 import "./Comments.css";
+import { Link } from "react-router-dom";
 
 interface CommentsProps {
   postId: string;
@@ -109,35 +110,43 @@ export default function Comments({ postId, onCountChanged }: CommentsProps) {
         <>
           {comments.length > 0 && (
             <div className="comments-list">
-              {comments.map((comment) => (
-                <div key={comment.commentId} className="comment">
-                  <Avatar
-                    src={comment.profileImageUrl ?? undefined}
-                    alt={comment.displayName}
-                    size="sm"
-                  />
+              {comments.map((comment) => {
+                const id =
+                  comment.userId === user?.userId ? "" : `/${comment.userId}`;
+                return (
+                  <div key={comment.commentId} className="comment">
+                    <Link to={`/profile${id}`}>
+                      <Avatar
+                        src={comment.profileImageUrl ?? undefined}
+                        alt={comment.displayName}
+                        size="sm"
+                      />
+                    </Link>
 
-                  <div className="comment-body">
-                    <div className="comment-header">
-                      <strong>{comment.displayName}</strong>
+                    <div className="comment-body">
+                      <div className="comment-header">
+                        <Link to={`/profile${id}`}>
+                          <strong>{comment.displayName}</strong>
+                        </Link>
 
-                      <span>@{comment.username}</span>
+                        <span>@{comment.username}</span>
+                      </div>
+
+                      <p>{comment.content}</p>
+
+                      {user?.userId === comment.userId && (
+                        <button
+                          type="button"
+                          className="comment-delete"
+                          onClick={() => handleDelete(comment.commentId)}
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
-
-                    <p>{comment.content}</p>
-
-                    {user?.userId === comment.userId && (
-                      <button
-                        type="button"
-                        className="comment-delete"
-                        onClick={() => handleDelete(comment.commentId)}
-                      >
-                        Delete
-                      </button>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

@@ -27,6 +27,8 @@ function App() {
 
               <Route path="/profile" element={<ProfilePage />} />
 
+              <Route path="/profile/:userId" element={<ProfilePage />} />
+
               <Route path="/profile/edit" element={<EditProfilePage />} />
             </Route>
           </Route>

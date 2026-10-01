@@ -7,5 +7,8 @@ public record UserProfileResponse(
     string DisplayName,
     string Bio,
     string? ProfileImageUrl,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    int FollowerCount,
+    int FollowingCount,
+    bool IsFollowing
 );

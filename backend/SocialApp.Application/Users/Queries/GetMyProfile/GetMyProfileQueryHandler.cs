@@ -4,10 +4,13 @@ using SocialApp.Application.Users.DTOs;
 
 namespace SocialApp.Application.Users.Queries.GetMyProfile;
 
-public class GetMyProfileQueryHandler(IUserRepository userRepository)
-        : IRequestHandler<GetMyProfileQuery, UserProfileResponse>
+public class GetMyProfileQueryHandler(
+    IUserRepository userRepository,
+    IUserFollowRepository followRepository)
+    : IRequestHandler<GetMyProfileQuery, UserProfileResponse>
 {
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IUserFollowRepository _followRepository = followRepository;
 
     public async Task<UserProfileResponse> Handle(
         GetMyProfileQuery request,
@@ -23,6 +26,14 @@ public class GetMyProfileQueryHandler(IUserRepository userRepository)
                 "User not found.");
         }
 
+        var followerCount = await _followRepository.CountFollowersAsync(
+            user.Id,
+            cancellationToken);
+
+        var followingCount = await _followRepository.CountFollowingAsync(
+            user.Id,
+            cancellationToken);
+
         return new UserProfileResponse(
             user.Id,
             user.Username,
@@ -30,6 +41,10 @@ public class GetMyProfileQueryHandler(IUserRepository userRepository)
             user.DisplayName,
             user.Bio,
             user.ProfileImageUrl,
-            user.CreatedAt);
+            user.CreatedAt,
+            followerCount,
+            followingCount,
+            false
+        );
     }
 }

@@ -11,6 +11,7 @@ import { togglePostLike, deletePost } from "../../services/postService";
 import type { Post } from "../../types/post";
 
 import "./PostCard.css";
+import { Link } from "react-router-dom";
 
 interface PostCardProps {
   post: Post;
@@ -81,17 +82,23 @@ export default function PostCard({ post, onDeleted }: PostCardProps) {
 
   const formattedDate = new Date(post.createdAt).toLocaleString();
 
+  const id = post.userId === user?.userId ? "" : `/${post.userId}`;
+
   return (
     <Card className="post-card">
       <div className="post-header">
-        <Avatar
-          src={post.profileImageUrl ?? undefined}
-          alt={post.displayName}
-          size="md"
-        />
+        <Link to={`/profile${id}`}>
+          <Avatar
+            src={post.profileImageUrl ?? undefined}
+            alt={post.displayName}
+            size="md"
+          />
+        </Link>
 
         <div className="post-author">
-          <strong>{post.displayName}</strong>
+          <Link to={`/profile${id}`}>
+            <strong>{post.displayName}</strong>
+          </Link>
 
           <span>@{post.username}</span>
 

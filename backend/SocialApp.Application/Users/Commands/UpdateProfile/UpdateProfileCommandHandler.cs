@@ -4,10 +4,13 @@ using SocialApp.Application.Users.DTOs;
 
 namespace SocialApp.Application.Users.Commands.UpdateProfile;
 
-public class UpdateProfileCommandHandler(IUserRepository userRepository)
-        : IRequestHandler<UpdateProfileCommand, UserProfileResponse>
+public class UpdateProfileCommandHandler(
+    IUserRepository userRepository,
+    IUserFollowRepository followRepository)
+    : IRequestHandler<UpdateProfileCommand, UserProfileResponse>
 {
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IUserFollowRepository _followRepository = followRepository;
 
     public async Task<UserProfileResponse> Handle(
         UpdateProfileCommand request,
@@ -31,6 +34,14 @@ public class UpdateProfileCommandHandler(IUserRepository userRepository)
         await _userRepository.SaveChangesAsync(
             cancellationToken);
 
+        var followerCount = await _followRepository.CountFollowersAsync(
+            user.Id,
+            cancellationToken);
+
+        var followingCount = await _followRepository.CountFollowingAsync(
+            user.Id,
+            cancellationToken);
+
         return new UserProfileResponse(
             user.Id,
             user.Username,
@@ -38,6 +49,10 @@ public class UpdateProfileCommandHandler(IUserRepository userRepository)
             user.DisplayName,
             user.Bio,
             user.ProfileImageUrl,
-            user.CreatedAt);
+            user.CreatedAt,
+            followerCount,
+            followingCount,
+            false
+        );
     }
 }

@@ -1,0 +1,150 @@
+.follow-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: var(--space-4);
+
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.follow-modal {
+  width: 100%;
+  max-width: 440px;
+  max-height: min(640px, 85vh);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.follow-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: var(--space-4) var(--space-5);
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.follow-modal-header h2 {
+  margin: 0;
+
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.follow-modal-content {
+  min-height: 180px;
+  overflow-y: auto;
+}
+
+.follow-modal-loading {
+  min-height: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.follow-modal-error,
+.follow-modal-empty {
+  min-height: 180px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: var(--space-3);
+
+  padding: var(--space-6);
+
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.follow-modal-error p,
+.follow-modal-empty p {
+  margin: 0;
+}
+
+.follow-user-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.follow-user-item {
+  display: flex;
+  align-items: center;
+
+  gap: var(--space-3);
+
+  padding: var(--space-4) var(--space-5);
+
+  transition:
+    background-color 0.15s ease;
+}
+
+.follow-user-item:hover {
+  background: var(--color-background);
+}
+
+.follow-user-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.follow-user-info strong {
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.follow-user-info span {
+  overflow: hidden;
+
+  color: var(--color-text-muted);
+
+  font-size: var(--font-size-sm);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .follow-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .follow-modal {
+    max-width: none;
+    max-height: 80vh;
+
+    border-radius:
+      var(--radius-xl)
+      var(--radius-xl)
+      0
+      0;
+  }
+}

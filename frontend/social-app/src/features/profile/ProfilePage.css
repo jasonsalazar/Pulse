@@ -1,0 +1,43 @@
+.profile-stats {
+  display: flex;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.profile-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  background: transparent;
+
+  color: var(--color-text-secondary);
+
+  font: inherit;
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.profile-stat:hover {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.profile-stat:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.profile-stat strong {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
