@@ -32,6 +32,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUserFollowRepository, UserFollowRepository>();
 
+        services.AddScoped<IPostFeedRepository, PostFeedRepository>();
+
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));

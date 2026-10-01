@@ -10,7 +10,7 @@ import { AppShell } from "./components/layout";
 
 import ProfilePage from "./features/profile/ProfilePage";
 import EditProfilePage from "./features/profile/EditProfilePage";
-import PostsPage from "./features/posts/PostsPage";
+import HomePage from "./features/home/HomePage";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
-              <Route path="/home" element={<PostsPage />} />
+              <Route path="/home" element={<HomePage />} />
 
               <Route path="/profile" element={<ProfilePage />} />
 

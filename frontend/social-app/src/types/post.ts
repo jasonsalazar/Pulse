@@ -37,3 +37,11 @@ export interface Comment {
 export interface CreateCommentRequest {
   content: string;
 }
+
+export interface PagedResponse<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasNextPage: boolean;
+}

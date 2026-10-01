@@ -1,5 +1,10 @@
 import { apiRequest } from "./api";
-import type { CreatePostRequest, Post, PostLikeResponse } from "../types/post";
+import type {
+  CreatePostRequest,
+  PagedResponse,
+  Post,
+  PostLikeResponse,
+} from "../types/post";
 
 export async function getRecentPosts(take = 20) {
   return apiRequest<Post[]>(`/posts?take=${take}`);
@@ -30,4 +35,10 @@ export async function togglePostLike(postId: string) {
   return apiRequest<PostLikeResponse>(`/posts/${postId}/like`, {
     method: "POST",
   });
+}
+
+export async function getHomeFeed(page = 1, pageSize = 20) {
+  return apiRequest<PagedResponse<Post>>(
+    `/posts/feed?page=${page}&pageSize=${pageSize}`,
+  );
 }

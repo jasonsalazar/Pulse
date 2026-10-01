@@ -2,11 +2,13 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialApp.Application.Common;
 using SocialApp.Application.Likes.Commands.TogglePostLike;
 using SocialApp.Application.Likes.DTOs;
 using SocialApp.Application.Posts.Commands.CreatePost;
 using SocialApp.Application.Posts.Commands.DeletePost;
 using SocialApp.Application.Posts.DTOs;
+using SocialApp.Application.Posts.Queries.GetHomeFeed;
 using SocialApp.Application.Posts.Queries.GetPost;
 using SocialApp.Application.Posts.Queries.GetRecentPosts;
 using SocialApp.Application.Posts.Queries.GetUserPosts;
@@ -205,6 +207,32 @@ public class PostsController(ISender sender) : ControllerBase
                 message = ex.Message
             });
         }
+    }
+
+    [Authorize]
+    [HttpGet("feed")]
+    public async Task<ActionResult<PagedResponse<PostResponse>>> GetHomeFeed(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId is null)
+        {
+            return Unauthorized();
+        }
+
+        var query = new GetHomeFeedQuery(
+            userId.Value,
+            page,
+            pageSize);
+
+        var result = await _sender.Send(
+            query,
+            cancellationToken);
+
+        return Ok(result);
     }
 
     private Guid? GetCurrentUserId()
