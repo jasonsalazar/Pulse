@@ -1,19 +1,23 @@
 using MediatR;
 using SocialApp.Application.Comments.DTOs;
 using SocialApp.Application.Common;
+using SocialApp.Application.Notifications.Commands.CreateNotification;
 using SocialApp.Domain.Comments;
+using SocialApp.Domain.Notifications;
 
 namespace SocialApp.Application.Comments.Commands.CreateComment;
 
 public class CreateCommentCommandHandler(
     IPostRepository postRepository,
     IUserRepository userRepository,
-    ICommentRepository commentRepository)
+    ICommentRepository commentRepository,
+    IMediator mediator)
         : IRequestHandler<CreateCommentCommand, CommentResponse>
 {
     private readonly IPostRepository _postRepository = postRepository;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly ICommentRepository _commentRepository = commentRepository;
+    private readonly IMediator _mediator = mediator;
 
     public async Task<CommentResponse> Handle(
         CreateCommentCommand request,
@@ -49,6 +53,14 @@ public class CreateCommentCommandHandler(
             cancellationToken);
 
         await _commentRepository.SaveChangesAsync(cancellationToken);
+
+        await _mediator.Send(
+            new CreateNotificationCommand(
+                post.UserId,
+                request.UserId,
+                NotificationType.Comment,
+                post.Id),
+            cancellationToken);
 
         return new CommentResponse(
             comment.Id,

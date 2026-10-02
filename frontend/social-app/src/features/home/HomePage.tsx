@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { getHomeFeed } from "../../services/postService";
 
@@ -17,6 +18,8 @@ import "./HomePage.css";
 const PAGE_SIZE = 20;
 
 export default function HomePage() {
+  const navigate = useNavigate();
+
   const [posts, setPosts] = useState<Post[]>([]);
 
   const [page, setPage] = useState(1);
@@ -137,6 +140,7 @@ export default function HomePage() {
             <PostCard
               key={post.postId}
               post={post}
+              onOpen={() => navigate(`/posts/${post.postId}`)}
               onDeleted={handlePostDeleted}
             />
           ))}

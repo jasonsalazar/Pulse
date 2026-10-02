@@ -35,6 +35,25 @@ public class UserRepository(AppDbContext context) : IUserRepository
             cancellationToken);
     }
 
+    public async Task<IReadOnlyList<User>> GetByIdsAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var userIds = ids
+            .Distinct()
+            .ToList();
+
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _context.Users
+            .AsNoTracking()
+            .Where(user => userIds.Contains(user.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<User?> GetByUsernameAsync(
         string username,
         CancellationToken cancellationToken = default)

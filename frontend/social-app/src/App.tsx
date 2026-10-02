@@ -11,30 +11,39 @@ import { AppShell } from "./components/layout";
 import ProfilePage from "./features/profile/ProfilePage";
 import EditProfilePage from "./features/profile/EditProfilePage";
 import HomePage from "./features/home/HomePage";
+import NotificationsPage from "./features/notifications/NotificationsPage";
+import { NotificationProvider } from "./context/NotificationContext";
+import PostDetailPage from "./features/posts/PostDetailPage";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+        <NotificationProvider>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppShell />}>
-              <Route path="/home" element={<HomePage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppShell />}>
+                <Route path="/home" element={<HomePage />} />
 
-              <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/profile" element={<ProfilePage />} />
 
-              <Route path="/profile/:userId" element={<ProfilePage />} />
+                <Route path="/profile/:userId" element={<ProfilePage />} />
 
-              <Route path="/profile/edit" element={<EditProfilePage />} />
+                <Route path="/profile/edit" element={<EditProfilePage />} />
+
+                <Route path="/posts/:postId" element={<PostDetailPage />} />
+
+                <Route path="/notifications" element={<NotificationsPage />} />
+              </Route>
             </Route>
-          </Route>
 
-          <Route path="*" element={<Navigate to="/home" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Routes>
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   );

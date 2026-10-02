@@ -1,0 +1,210 @@
+.notification-bell {
+  position: relative;
+}
+
+.notification-bell__button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.notification-bell__button:hover {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+.notification-bell__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.notification-bell__icon {
+  width: 21px;
+  height: 21px;
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  color: var(--color-surface);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.notification-bell__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+}
+
+.notification-bell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.notification-bell__header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.notification-bell__view-all {
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.notification-bell__view-all:hover {
+  text-decoration: underline;
+}
+
+.notification-bell__list {
+  overflow-y: auto;
+}
+
+.notification-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  color: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.notification-preview:hover {
+  background: var(--color-background);
+}
+
+.notification-preview--unread {
+  background: var(--color-primary-light);
+}
+
+.notification-preview--unread:hover {
+  background: #d1e4ff;
+}
+
+.notification-preview__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-preview__content p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.notification-preview__content p strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.notification-preview__content span {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.notification-preview__dot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.notification-bell__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 180px;
+  padding: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+.notification-bell__state p {
+  margin: 0 0 var(--space-2);
+  color: var(--color-error);
+}
+
+.notification-bell__state strong {
+  color: var(--color-text-primary);
+}
+
+.notification-bell__state--error {
+  color: var(--color-text-secondary);
+}
+
+.notification-bell__empty-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.notification-bell__footer {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  background: var(--color-surface);
+}
+
+.notification-bell__footer:hover {
+  background: var(--color-background);
+}
+
+@media (max-width: 767px) {
+  .notification-bell__dropdown {
+    position: fixed;
+    top: calc(var(--header-height) + 8px);
+    right: var(--space-3);
+    left: var(--space-3);
+    width: auto;
+    max-height: calc(100vh - var(--header-height) - 24px);
+  }
+}

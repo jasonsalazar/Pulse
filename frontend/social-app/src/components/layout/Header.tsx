@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+
 import { useAuth } from "../../context/AuthContext";
-import { Avatar } from "../ui";
+import Avatar from "../ui/Avatar";
+import { NotificationBell } from "../notifications";
 
 import "./Header.css";
 
@@ -9,22 +11,26 @@ export default function Header() {
 
   return (
     <header className="app-header">
-      <div className="app-header-inner">
-        <Link to="/home" className="app-logo">
-          Pulse
+      <div className="app-header__inner">
+        <Link to="/home" className="app-header__brand">
+          <span className="app-header__logo">P</span>
+
+          <span className="app-header__name">Pulse</span>
         </Link>
 
-        <div className="app-header-search">
-          <input type="search" placeholder="Search" aria-label="Search" />
+        <div className="app-header__actions">
+          <NotificationBell />
+
+          {user && (
+            <Link
+              to="/profile"
+              className="app-header__profile"
+              aria-label="View your profile"
+            >
+              <Avatar alt={user.username} size="sm" />
+            </Link>
+          )}
         </div>
-
-        <Link
-          to="/profile"
-          className="app-header-profile"
-          aria-label="My profile"
-        >
-          <Avatar size="sm" alt={user?.username ?? "User"} />
-        </Link>
       </div>
     </header>
   );

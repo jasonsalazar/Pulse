@@ -1,17 +1,21 @@
 using MediatR;
 using SocialApp.Application.Common;
 using SocialApp.Application.Follows.DTOs;
+using SocialApp.Application.Notifications.Commands.CreateNotification;
 using SocialApp.Domain.Follows;
+using SocialApp.Domain.Notifications;
 
 namespace SocialApp.Application.Follows.Commands.FollowUser;
 
 public class FollowUserCommandHandler(
     IUserRepository userRepository,
-    IUserFollowRepository followRepository)
+    IUserFollowRepository followRepository,
+    IMediator mediator)
         : IRequestHandler<FollowUserCommand, FollowResponse>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IUserFollowRepository _followRepository = followRepository;
+    private readonly IMediator _mediator = mediator;
 
     public async Task<FollowResponse> Handle(
         FollowUserCommand request,
@@ -77,6 +81,13 @@ public class FollowUserCommandHandler(
             cancellationToken);
 
         await _followRepository.SaveChangesAsync(
+            cancellationToken);
+
+        await _mediator.Send(
+            new CreateNotificationCommand(
+                request.FollowingId,
+                request.FollowerId,
+                NotificationType.Follow),
             cancellationToken);
 
         var newFollowerCount =
