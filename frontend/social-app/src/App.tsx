@@ -14,35 +14,44 @@ import HomePage from "./features/home/HomePage";
 import NotificationsPage from "./features/notifications/NotificationsPage";
 import { NotificationProvider } from "./context/NotificationContext";
 import PostDetailPage from "./features/posts/PostDetailPage";
+import { MessagingProvider } from "./context/MessagingContext";
+import MessagesPage from "./features/messages/MessagesPage";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NotificationProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
+          <MessagingProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
 
-            <Route path="/register" element={<RegisterPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-            <Route element={<ProtectedRoute />}>
-              <Route element={<AppShell />}>
-                <Route path="/home" element={<HomePage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppShell />}>
+                  <Route path="/home" element={<HomePage />} />
 
-                <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
 
-                <Route path="/profile/:userId" element={<ProfilePage />} />
+                  <Route path="/profile/:userId" element={<ProfilePage />} />
 
-                <Route path="/profile/edit" element={<EditProfilePage />} />
+                  <Route path="/profile/edit" element={<EditProfilePage />} />
 
-                <Route path="/posts/:postId" element={<PostDetailPage />} />
+                  <Route path="/posts/:postId" element={<PostDetailPage />} />
 
-                <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+
+                  <Route
+                    path="/notifications"
+                    element={<NotificationsPage />}
+                  />
+                </Route>
               </Route>
-            </Route>
 
-            <Route path="*" element={<Navigate to="/home" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/home" replace />} />
+            </Routes>
+          </MessagingProvider>
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>

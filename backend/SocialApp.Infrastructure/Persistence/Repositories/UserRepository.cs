@@ -36,13 +36,9 @@ public class UserRepository(AppDbContext context) : IUserRepository
     }
 
     public async Task<IReadOnlyList<User>> GetByIdsAsync(
-        IEnumerable<Guid> ids,
+        IReadOnlyCollection<Guid> userIds,
         CancellationToken cancellationToken = default)
     {
-        var userIds = ids
-            .Distinct()
-            .ToList();
-
         if (userIds.Count == 0)
         {
             return [];

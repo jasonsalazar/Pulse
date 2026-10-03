@@ -61,6 +61,22 @@
   cursor: pointer;
 }
 
+.nav-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-surface);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  margin-left: auto;
+}
+
 @media (max-width: 767px) {
   .app-sidebar {
     display: none;

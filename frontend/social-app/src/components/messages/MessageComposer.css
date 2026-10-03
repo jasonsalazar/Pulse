@@ -1,0 +1,22 @@
+.message-composer {
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.message-composer textarea {
+  resize: none;
+}
+
+.message-composer__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.message-composer__count {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}

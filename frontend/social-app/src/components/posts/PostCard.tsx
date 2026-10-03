@@ -91,7 +91,11 @@ export default function PostCard({ post, onDeleted, onOpen }: PostCardProps) {
     <Card className="post-card">
       <div className="post-card__header">
         <Link
-          to={`/profile/${post.userId}`}
+          to={
+            post.userId === user?.userId
+              ? "/profile"
+              : `/profile/${post.userId}`
+          }
           className="post-card__author"
           onClick={(event) => event.stopPropagation()}
         >

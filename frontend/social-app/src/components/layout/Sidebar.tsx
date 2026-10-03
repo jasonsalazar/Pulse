@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 import "./Sidebar.css";
+import { useMessaging } from "../../context/MessagingContext";
 
 interface NavigationItem {
   label: string;
@@ -40,6 +41,7 @@ const navigationItems: NavigationItem[] = [
 export default function Sidebar() {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const { totalUnreadCount } = useMessaging();
 
   const handleLogout = () => {
     logout();
@@ -60,6 +62,12 @@ export default function Sidebar() {
             <span className="sidebar-link-icon">{item.icon}</span>
 
             <span>{item.label}</span>
+
+            {item.label === "Messages" && totalUnreadCount > 0 && (
+              <span className="nav-badge">
+                {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

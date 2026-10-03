@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
+using SocialApp.Api.Hubs;
 using SocialApp.Application;
 using SocialApp.Infrastructure;
 using SocialApp.Infrastructure.Authentication;
@@ -47,6 +49,30 @@ builder.Services
 
                 ClockSkew = TimeSpan.Zero
             };
+
+        options.Events =
+            new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken =
+                        context.Request.Query[
+                            "access_token"];
+
+                    var path =
+                        context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        path.StartsWithSegments(
+                            "/hubs/chat"))
+                    {
+                        context.Token =
+                            accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
     });
 
 builder.Services.AddAuthorization();
@@ -56,13 +82,65 @@ builder.Services.AddCors(options =>
     options.AddPolicy("ReactClient", policy =>
     {
         policy
-            .WithOrigins("http://localhost:3000", "http://192.168.1.5:3000")
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://192.168.1.5:3000",
+                "http://192.168.1.5:5000")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
 var app = builder.Build();
+
+app.UseExceptionHandler(exceptionApp =>
+{
+    exceptionApp.Run(async context =>
+    {
+        context.Response.ContentType =
+            "application/json";
+
+        var exception =
+            context.Features
+                .Get<
+                    Microsoft.AspNetCore.Diagnostics
+                    .IExceptionHandlerFeature>()
+                ?.Error;
+
+        context.Response.StatusCode =
+            exception switch
+            {
+                UnauthorizedAccessException
+                    => StatusCodes.Status403Forbidden,
+
+                KeyNotFoundException
+                    => StatusCodes.Status404NotFound,
+
+                ArgumentException
+                    => StatusCodes.Status400BadRequest,
+
+                InvalidOperationException
+                    => StatusCodes.Status400BadRequest,
+
+                _ => StatusCodes.Status500InternalServerError
+            };
+
+        var message =
+            exception?.Message ??
+            "An unexpected error occurred.";
+
+        await context.Response.WriteAsJsonAsync(
+            new
+            {
+                message
+            });
+    });
+});
 
 app.UseHttpsRedirection();
 
@@ -73,6 +151,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.MapGet("/api/health", () =>
 {

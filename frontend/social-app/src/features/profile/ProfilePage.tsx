@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { useAuth } from "../../context/AuthContext";
 import { getMyProfile, getUserProfile } from "../../services/userService";
@@ -7,17 +7,22 @@ import { followUser, unfollowUser } from "../../services/followService";
 
 import type { UserProfile } from "../../types/user";
 
-import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
-import Avatar from "../../components/ui/Avatar";
-import Spinner from "../../components/ui/Spinner";
-import ErrorMessage from "../../components/ui/ErrorMessage";
+import {
+  Avatar,
+  Button,
+  Card,
+  ErrorMessage,
+  Spinner,
+} from "../../components/ui";
 
 import "./ProfilePage.css";
 import { FollowListModal } from "../../components/follows";
+import { useMessaging } from "../../context/MessagingContext";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { startConversation } = useMessaging();
   const { userId } = useParams<{ userId: string }>();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -31,6 +36,8 @@ export default function ProfilePage() {
   const [followListType, setFollowListType] = useState<
     "followers" | "following" | null
   >(null);
+
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
 
   const isOwnProfile = !userId || userId === user?.userId;
 
@@ -90,6 +97,27 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleMessage() {
+    if (!profile || isMessageLoading) {
+      return;
+    }
+
+    try {
+      setIsMessageLoading(true);
+      setError(null);
+
+      const conversation = await startConversation(profile.userId);
+
+      navigate(`/messages?conversation=${conversation.conversationId}`);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to start conversation.",
+      );
+    } finally {
+      setIsMessageLoading(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="profile-page-loading">
@@ -98,7 +126,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (error) {
+  if (error && !profile) {
     return (
       <div className="profile-page">
         <ErrorMessage message={error} />
@@ -115,6 +143,11 @@ export default function ProfilePage() {
       </div>
     );
   }
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div className="profile-page">
@@ -135,21 +168,31 @@ export default function ProfilePage() {
               </div>
 
               {isOwnProfile ? (
-                <Link to="/profile/edit">
-                  <Button variant="secondary">Edit Profile</Button>
-                </Link>
+                <div className="profile-actions">
+                  <Link to="/profile/edit">
+                    <Button variant="secondary">Edit Profile</Button>
+                  </Link>
+                  <Button variant="danger" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
               ) : (
-                <Button
-                  variant={profile.isFollowing ? "secondary" : "primary"}
-                  onClick={handleFollowToggle}
-                  disabled={isFollowLoading}
-                >
-                  {isFollowLoading
-                    ? "Loading..."
-                    : profile.isFollowing
-                      ? "Following"
-                      : "Follow"}
-                </Button>
+                <div className="profile-actions">
+                  <Button
+                    variant={profile.isFollowing ? "secondary" : "primary"}
+                    onClick={handleFollowToggle}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowLoading
+                      ? "Loading..."
+                      : profile.isFollowing
+                        ? "Following"
+                        : "Follow"}
+                  </Button>
+                  <Button onClick={handleMessage} disabled={isMessageLoading}>
+                    {isMessageLoading ? "Opening..." : "Message"}
+                  </Button>
+                </div>
               )}
             </div>
 

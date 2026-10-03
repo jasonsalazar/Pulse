@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SocialApp.Domain.Comments;
 using SocialApp.Domain.Follows;
 using SocialApp.Domain.Likes;
+using SocialApp.Domain.Messaging;
 using SocialApp.Domain.Notifications;
 using SocialApp.Domain.Posts;
 using SocialApp.Domain.Users;
@@ -21,6 +22,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserFollow> UserFollows => Set<UserFollow>();
 
     public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    public DbSet<Message> Messages => Set<Message>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

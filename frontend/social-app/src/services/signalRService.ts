@@ -1,0 +1,141 @@
+import {
+  HubConnection,
+  HubConnectionBuilder,
+  HubConnectionState,
+  LogLevel,
+} from "@microsoft/signalr";
+
+import type { Message } from "../types/messaging";
+
+const SIGNALR_URL = "http://192.168.1.5:5000/hubs/chat";
+
+let connection: HubConnection | null = null;
+
+export type SignalRConnectionStatus =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "reconnecting";
+
+type ConnectionStatusHandler = (status: SignalRConnectionStatus) => void;
+
+const connectionStatusHandlers = new Set<ConnectionStatusHandler>();
+
+function notifyConnectionStatus(status: SignalRConnectionStatus) {
+  connectionStatusHandlers.forEach((handler) => {
+    handler(status);
+  });
+}
+
+function createConnection(): HubConnection {
+  const hubConnection = new HubConnectionBuilder()
+    .withUrl(SIGNALR_URL, {
+      accessTokenFactory: () => localStorage.getItem("accessToken") ?? "",
+    })
+    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+    .configureLogging(LogLevel.Warning)
+    .build();
+
+  hubConnection.onreconnecting(() => {
+    notifyConnectionStatus("reconnecting");
+  });
+
+  hubConnection.onreconnected(() => {
+    notifyConnectionStatus("connected");
+  });
+
+  hubConnection.onclose(() => {
+    notifyConnectionStatus("disconnected");
+  });
+
+  return hubConnection;
+}
+
+export function getSignalRConnection(): HubConnection {
+  if (!connection) {
+    connection = createConnection();
+  }
+
+  return connection;
+}
+
+export async function startSignalRConnection(): Promise<HubConnection> {
+  const hubConnection = getSignalRConnection();
+
+  if (hubConnection.state === HubConnectionState.Connected) {
+    notifyConnectionStatus("connected");
+
+    return hubConnection;
+  }
+
+  if (hubConnection.state === HubConnectionState.Connecting) {
+    return hubConnection;
+  }
+
+  if (hubConnection.state === HubConnectionState.Reconnecting) {
+    return hubConnection;
+  }
+
+  notifyConnectionStatus("connecting");
+
+  try {
+    await hubConnection.start();
+
+    notifyConnectionStatus("connected");
+
+    return hubConnection;
+  } catch (error) {
+    notifyConnectionStatus("disconnected");
+
+    throw error;
+  }
+}
+
+export async function stopSignalRConnection(): Promise<void> {
+  if (!connection) {
+    return;
+  }
+
+  if (connection.state !== HubConnectionState.Disconnected) {
+    await connection.stop();
+  }
+}
+
+export async function sendSignalRMessage(
+  conversationId: string,
+  content: string,
+): Promise<Message> {
+  const hubConnection = await startSignalRConnection();
+
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    throw new Error("Messaging connection is not available.");
+  }
+
+  return await hubConnection.invoke<Message>(
+    "SendMessage",
+    conversationId,
+    content,
+  );
+}
+
+export function onMessageReceived(
+  handler: (message: Message) => void,
+): () => void {
+  const hubConnection = getSignalRConnection();
+
+  hubConnection.on("messageReceived", handler);
+
+  return () => {
+    hubConnection.off("messageReceived", handler);
+  };
+}
+
+export function onConnectionStatusChanged(
+  handler: ConnectionStatusHandler,
+): () => void {
+  connectionStatusHandlers.add(handler);
+
+  return () => {
+    connectionStatusHandlers.delete(handler);
+  };
+}

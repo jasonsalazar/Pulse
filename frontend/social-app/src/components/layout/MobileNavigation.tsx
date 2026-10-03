@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 import "./MobileNavigation.css";
+import { useMessaging } from "../../context/MessagingContext";
 
 interface NavigationItem {
   label: string;
@@ -20,9 +21,9 @@ const navigationItems: NavigationItem[] = [
     icon: "⌕",
   },
   {
-    label: "Notifications",
-    path: "/notifications",
-    icon: "♡",
+    label: "Messages",
+    path: "/messages",
+    icon: "✉",
   },
   {
     label: "Profile",
@@ -32,6 +33,8 @@ const navigationItems: NavigationItem[] = [
 ];
 
 export default function MobileNavigation() {
+  const { totalUnreadCount } = useMessaging();
+
   return (
     <nav className="mobile-navigation">
       {navigationItems.map((item) => (
@@ -47,6 +50,12 @@ export default function MobileNavigation() {
           <span className="mobile-navigation-icon">{item.icon}</span>
 
           <span>{item.label}</span>
+
+          {item.label === "Messages" && totalUnreadCount > 0 && (
+            <span className="mobile-nav-badge">
+              {totalUnreadCount > 99 ? "99+" : totalUnreadCount}
+            </span>
+          )}
         </NavLink>
       ))}
     </nav>
