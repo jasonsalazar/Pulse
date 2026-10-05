@@ -22,6 +22,8 @@ import {
   stopSignalRConnection,
   sendSignalRMessage,
   type SignalRConnectionStatus,
+  onMessagesRead,
+  markConversationAsReadViaSignalR,
 } from "../services/signalRService";
 
 import type { Conversation, Message } from "../types/messaging";
@@ -180,28 +182,58 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
     messagePage,
   ]);
 
-  const markAsRead = useCallback(async (conversationId: string) => {
-    try {
-      await markConversationAsRead(conversationId);
+  const markAsRead = useCallback(
+    async (conversationId: string) => {
+      try {
+        if (isConnected) {
+          await markConversationAsReadViaSignalR(conversationId);
+        } else {
+          await markConversationAsRead(conversationId);
+        }
 
-      setConversations((previous) =>
-        previous.map((conversation) =>
-          conversation.conversationId === conversationId
-            ? {
-                ...conversation,
-                unreadCount: 0,
-              }
-            : conversation,
-        ),
-      );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to mark conversation as read.",
-      );
-    }
-  }, []);
+        setConversations((current) =>
+          current.map((conversation) =>
+            conversation.conversationId === conversationId
+              ? {
+                  ...conversation,
+                  unreadCount: 0,
+                }
+              : conversation,
+          ),
+        );
+
+        setMessages((current) =>
+          current.map((message) =>
+            message.conversationId === conversationId &&
+            message.senderId !== user?.userId
+              ? {
+                  ...message,
+                  isRead: true,
+                }
+              : message,
+          ),
+        );
+      } catch (error) {
+        if (isConnected) {
+          throw error;
+        }
+
+        await markConversationAsRead(conversationId);
+
+        setConversations((current) =>
+          current.map((conversation) =>
+            conversation.conversationId === conversationId
+              ? {
+                  ...conversation,
+                  unreadCount: 0,
+                }
+              : conversation,
+          ),
+        );
+      }
+    },
+    [isConnected, user?.userId],
+  );
 
   const setActiveConversation = useCallback(
     async (conversationId: string | null) => {
@@ -354,11 +386,30 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       }
     });
 
+    const unsubscribeMessagesRead = onMessagesRead((result) => {
+      setMessages((current) =>
+        current.map((message) => {
+          if (
+            message.conversationId !== result.conversationId ||
+            !result.messageIds.includes(message.messageId)
+          ) {
+            return message;
+          }
+
+          return {
+            ...message,
+            isRead: true,
+          };
+        }),
+      );
+    });
+
     const unsubscribeConnectionStatus =
       onConnectionStatusChanged(setConnectionStatus);
 
     return () => {
       unsubscribeMessage();
+      unsubscribeMessagesRead();
       unsubscribeConnectionStatus();
     };
   }, [activeConversationId, markAsRead]);

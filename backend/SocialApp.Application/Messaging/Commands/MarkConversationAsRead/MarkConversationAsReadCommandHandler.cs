@@ -1,5 +1,6 @@
 using MediatR;
 using SocialApp.Application.Common;
+using SocialApp.Application.Messaging.DTOs;
 
 namespace SocialApp.Application.Messaging.Commands.MarkConversationAsRead;
 
@@ -7,25 +8,22 @@ public class MarkConversationAsReadCommandHandler(
     IConversationRepository conversationRepository,
     IMessageRepository messageRepository)
         : IRequestHandler<
-        MarkConversationAsReadCommand>
+        MarkConversationAsReadCommand,
+        MessagesReadResponse>
 {
     private readonly IConversationRepository
-        _conversationRepository =
-            conversationRepository;
-
+        _conversationRepository = conversationRepository;
     private readonly IMessageRepository
-        _messageRepository =
-            messageRepository;
+        _messageRepository = messageRepository;
 
-    public async Task Handle(
+    public async Task<MessagesReadResponse> Handle(
         MarkConversationAsReadCommand request,
         CancellationToken cancellationToken)
     {
         var conversation =
-            await _conversationRepository
-                .GetByIdAsync(
-                    request.ConversationId,
-                    cancellationToken);
+            await _conversationRepository.GetByIdAsync(
+                request.ConversationId,
+                cancellationToken);
 
         if (conversation is null)
         {
@@ -33,21 +31,27 @@ public class MarkConversationAsReadCommandHandler(
                 "Conversation not found.");
         }
 
-        if (!conversation.ContainsUser(
-                request.CurrentUserId))
+        if (!conversation.ContainsUser(request.CurrentUserId))
         {
             throw new UnauthorizedAccessException(
                 "You do not belong to this conversation.");
         }
 
-        await _messageRepository
-            .MarkConversationAsReadAsync(
+        var messageIds =
+            await _messageRepository.MarkConversationAsReadAsync(
                 request.ConversationId,
                 request.CurrentUserId,
                 cancellationToken);
 
-        await _messageRepository
-            .SaveChangesAsync(
+        if (messageIds.Count > 0)
+        {
+            await _messageRepository.SaveChangesAsync(
                 cancellationToken);
+        }
+
+        return new MessagesReadResponse(
+            request.ConversationId,
+            request.CurrentUserId,
+            messageIds);
     }
 }

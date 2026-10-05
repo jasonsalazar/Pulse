@@ -160,7 +160,7 @@ public class ConversationsController(
     // POST:
     // /api/conversations/{conversationId}/read
     [HttpPost("{conversationId:guid}/read")]
-    public async Task<IActionResult>
+    public async Task<ActionResult<MessagesReadResponse>>
         MarkConversationAsRead(
             Guid conversationId,
             CancellationToken cancellationToken)
@@ -172,11 +172,12 @@ public class ConversationsController(
                 currentUserId,
                 conversationId);
 
-        await _mediator.Send(
-            command,
-            cancellationToken);
+        var result =
+            await _mediator.Send(
+                command,
+                cancellationToken);
 
-        return NoContent();
+        return Ok(result);
     }
 
     private Guid GetCurrentUserId()

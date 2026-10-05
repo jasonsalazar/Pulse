@@ -54,28 +54,29 @@ public class MessageRepository(
             cancellationToken);
     }
 
-    public async Task<int> MarkConversationAsReadAsync(
-        Guid conversationId,
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<Guid>> MarkConversationAsReadAsync(
+    Guid conversationId,
+    Guid userId,
+    CancellationToken cancellationToken)
     {
-        var messages =
-            await _context.Messages
-                .Where(
-                    message =>
-                        message.ConversationId ==
-                        conversationId &&
-                        message.SenderId != userId &&
-                        message.ReadAt == null)
-                .ToListAsync(
-                    cancellationToken);
+        var messages = await _context.Messages
+            .Where(message =>
+                message.ConversationId == conversationId &&
+                message.SenderId != userId &&
+                message.ReadAt == null)
+            .ToListAsync(cancellationToken);
+
+        if (messages.Count == 0)
+        {
+            return [];
+        }
 
         foreach (var message in messages)
         {
             message.MarkAsRead();
         }
 
-        return messages.Count;
+        return [.. messages.Select(message => message.Id)];
     }
 
     public async Task SaveChangesAsync(

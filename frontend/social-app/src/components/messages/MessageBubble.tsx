@@ -30,6 +30,19 @@ export default function MessageBubble({
         <p className="message-bubble__content">{message.content}</p>
 
         <span className="message-bubble__time">{formattedTime}</span>
+
+        {isOwnMessage && (
+          <span
+            className={
+              message.isRead
+                ? "message-read-status message-read-status-read"
+                : "message-read-status"
+            }
+            aria-label={message.isRead ? "Read" : "Sent"}
+          >
+            {message.isRead ? "✓✓" : "✓"}
+          </span>
+        )}
       </div>
     </div>
   );

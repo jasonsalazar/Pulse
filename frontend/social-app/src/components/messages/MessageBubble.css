@@ -45,3 +45,14 @@
   opacity: 0.7;
   text-align: right;
 }
+
+.message-read-status {
+  font-size: 0.4rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.08em;
+  float: inline-end;
+}
+
+.message-read-status-read {
+  color: var(--color-secondary);
+}

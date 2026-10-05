@@ -25,3 +25,9 @@ export interface CreateConversationRequest {
 export interface SendMessageRequest {
   content: string;
 }
+
+export interface MessagesRead {
+  conversationId: string;
+  readerUserId: string;
+  messageIds: string[];
+}

@@ -5,7 +5,7 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 
-import type { Message } from "../types/messaging";
+import type { Message, MessagesRead } from "../types/messaging";
 
 const SIGNALR_URL = "http://192.168.1.12:5000/hubs/chat";
 
@@ -18,6 +18,8 @@ export type SignalRConnectionStatus =
   | "reconnecting";
 
 type ConnectionStatusHandler = (status: SignalRConnectionStatus) => void;
+
+type MessagesReadHandler = (result: MessagesRead) => void;
 
 const connectionStatusHandlers = new Set<ConnectionStatusHandler>();
 
@@ -138,4 +140,28 @@ export function onConnectionStatusChanged(
   return () => {
     connectionStatusHandlers.delete(handler);
   };
+}
+
+export function onMessagesRead(handler: MessagesReadHandler): () => void {
+  const hubConnection = getSignalRConnection();
+  const callback = (result: MessagesRead) => {
+    handler(result);
+  };
+
+  hubConnection.on("messagesRead", callback);
+
+  return () => {
+    hubConnection.off("messagesRead", callback);
+  };
+}
+
+export async function markConversationAsReadViaSignalR(
+  conversationId: string,
+): Promise<void> {
+  const hubConnection = getSignalRConnection();
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    throw new Error("SignalR is not connected.");
+  }
+
+  await hubConnection.invoke("MarkConversationAsRead", conversationId);
 }

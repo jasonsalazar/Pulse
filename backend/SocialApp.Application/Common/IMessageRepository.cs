@@ -29,7 +29,7 @@ public interface IMessageRepository
         Message message,
         CancellationToken cancellationToken);
 
-    Task<int> MarkConversationAsReadAsync(
+    Task<IReadOnlyList<Guid>> MarkConversationAsReadAsync(
         Guid conversationId,
         Guid userId,
         CancellationToken cancellationToken);
