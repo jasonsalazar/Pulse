@@ -37,8 +37,12 @@ interface MessagingContextValue {
   error: string | null;
   totalUnreadCount: number;
   connectionStatus: SignalRConnectionStatus;
+  hasMoreMessages: boolean;
+  isLoadingMoreMessages: boolean;
+
   setActiveConversation: (conversationId: string | null) => Promise<void>;
   loadConversations: () => Promise<void>;
+  loadMoreMessages: () => Promise<void>;
   loadMessages: (conversationId: string) => Promise<void>;
   startConversation: (otherUserId: string) => Promise<Conversation>;
   sendMessage: (content: string) => Promise<Message>;
@@ -57,19 +61,17 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
   const { user, isLoading: isAuthLoading } = useAuth();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
-
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
-
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
-
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
+  const [messagePage, setMessagePage] = useState(1);
 
   const [isConnected, setIsConnected] = useState(false);
-
   const [connectionStatus, setConnectionStatus] =
     useState<SignalRConnectionStatus>("disconnected");
 
@@ -102,19 +104,81 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
   }, []);
 
   const loadMessages = useCallback(async (conversationId: string) => {
+    setIsLoadingMessages(true);
+    setIsLoadingMoreMessages(false);
+    setHasMoreMessages(true);
+    setMessagePage(1);
+
     try {
-      setIsLoadingMessages(true);
-      setError(null);
+      const result = await getMessages(conversationId, 1, 50);
 
-      const result = await getMessages(conversationId);
+      setMessages(
+        [...result].sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        ),
+      );
 
-      setMessages(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load messages.");
+      setHasMoreMessages(result.length === 50);
     } finally {
       setIsLoadingMessages(false);
     }
   }, []);
+
+  const loadMoreMessages = useCallback(async () => {
+    if (
+      !activeConversationId ||
+      isLoadingMessages ||
+      isLoadingMoreMessages ||
+      !hasMoreMessages
+    ) {
+      return;
+    }
+
+    const nextPage = messagePage + 1;
+
+    setIsLoadingMoreMessages(true);
+
+    try {
+      const olderMessages = await getMessages(
+        activeConversationId,
+        nextPage,
+        50,
+      );
+
+      if (olderMessages.length === 0) {
+        setHasMoreMessages(false);
+        return;
+      }
+
+      setMessages((current) => {
+        const merged = [...olderMessages, ...current];
+
+        const unique = Array.from(
+          new Map(
+            merged.map((message) => [message.messageId, message]),
+          ).values(),
+        );
+
+        return unique.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+      });
+
+      setMessagePage(nextPage);
+
+      setHasMoreMessages(olderMessages.length === 50);
+    } finally {
+      setIsLoadingMoreMessages(false);
+    }
+  }, [
+    activeConversationId,
+    hasMoreMessages,
+    isLoadingMessages,
+    isLoadingMoreMessages,
+    messagePage,
+  ]);
 
   const markAsRead = useCallback(async (conversationId: string) => {
     try {
@@ -322,6 +386,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       error,
       totalUnreadCount,
       connectionStatus,
+      hasMoreMessages,
+      isLoadingMoreMessages,
+      loadMoreMessages,
       setActiveConversation,
       loadConversations,
       loadMessages,
@@ -339,6 +406,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       error,
       totalUnreadCount,
       connectionStatus,
+      hasMoreMessages,
+      isLoadingMoreMessages,
+      loadMoreMessages,
       setActiveConversation,
       loadConversations,
       loadMessages,

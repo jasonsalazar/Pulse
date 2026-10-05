@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 import type { Conversation, Message } from "../../types/messaging";
 
-import { Avatar } from "../ui";
+import { Avatar, Spinner } from "../ui";
 
 import MessageBubble from "./MessageBubble";
 import MessageComposer from "./MessageComposer";
@@ -14,6 +14,8 @@ interface ChatWindowProps {
   messages: Message[];
   currentUserId: string;
   isLoading: boolean;
+  isLoadingMoreMessages: boolean;
+  hasMoreMessages: boolean;
   isConnected: boolean;
   connectionStatus:
     | "disconnected"
@@ -21,6 +23,8 @@ interface ChatWindowProps {
     | "connected"
     | "reconnecting";
   error: string | null;
+
+  onLoadMoreMessages: () => Promise<void>;
   onSendMessage: (content: string) => Promise<void>;
   onBack?: () => void;
 }
@@ -30,22 +34,83 @@ export default function ChatWindow({
   messages,
   currentUserId,
   isLoading,
+  isLoadingMoreMessages,
+  hasMoreMessages,
   connectionStatus,
   error,
+  onLoadMoreMessages,
   onSendMessage,
   onBack,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const previousMessageCount = useRef(0);
+
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({
+  //     behavior: "smooth",
+  //   });
+  // }, [messages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
+    const container = messagesContainerRef.current;
 
-  if (error) {
-    return <div className="chat-error">{error}</div>;
-  }
+    if (!container) {
+      return;
+    }
+
+    const scrollContainer = container;
+
+    async function handleScroll() {
+      if (scrollContainer.scrollTop > 100) {
+        return;
+      }
+
+      if (!hasMoreMessages || isLoadingMoreMessages) {
+        return;
+      }
+
+      const previousScrollHeight = scrollContainer.scrollHeight;
+
+      const previousScrollTop = scrollContainer.scrollTop;
+
+      await onLoadMoreMessages();
+
+      requestAnimationFrame(() => {
+        const newScrollHeight = scrollContainer.scrollHeight;
+
+        scrollContainer.scrollTop =
+          previousScrollTop + (newScrollHeight - previousScrollHeight);
+      });
+    }
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasMoreMessages, isLoadingMoreMessages, onLoadMoreMessages]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const wasInitialLoad = previousMessageCount.current === 0;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+
+    const isNearBottom = distanceFromBottom < 120;
+
+    if (wasInitialLoad || isNearBottom) {
+      container.scrollTop = container.scrollHeight;
+    }
+
+    previousMessageCount.current = messages.length;
+  }, [messages]);
 
   if (!conversation) {
     return (
@@ -101,7 +166,20 @@ export default function ChatWindow({
         </div>
       </header>
 
-      <div className="chat-window__messages">
+      {error && <div className="chat-error">{error}</div>}
+
+      <div ref={messagesContainerRef} className="chat-window__messages">
+        {!hasMoreMessages && messages.length > 0 && (
+          <div className="conversation-start">Beginning of conversation</div>
+        )}
+
+        {isLoadingMoreMessages && (
+          <div className="messages-loading-more">
+            <Spinner />
+            <span>Loading older messages...</span>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="chat-window__loading">Loading messages...</div>
         ) : messages.length === 0 ? (

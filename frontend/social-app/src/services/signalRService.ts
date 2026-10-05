@@ -7,7 +7,7 @@ import {
 
 import type { Message } from "../types/messaging";
 
-const SIGNALR_URL = "http://192.168.1.5:5000/hubs/chat";
+const SIGNALR_URL = "http://192.168.1.12:5000/hubs/chat";
 
 let connection: HubConnection | null = null;
 

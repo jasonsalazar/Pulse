@@ -18,9 +18,12 @@ export default function MessagesPage() {
     messages,
     isLoadingConversations,
     isLoadingMessages,
+    isLoadingMoreMessages,
+    hasMoreMessages,
     isConnected,
     connectionStatus,
     error,
+    loadMoreMessages,
     setActiveConversation,
     sendMessage,
   } = useMessaging();
@@ -111,9 +114,12 @@ export default function MessagesPage() {
             messages={messages}
             currentUserId={user.userId}
             isLoading={isLoadingMessages}
+            isLoadingMoreMessages={isLoadingMoreMessages}
+            hasMoreMessages={hasMoreMessages}
             isConnected={isConnected}
             connectionStatus={connectionStatus}
             error={error}
+            onLoadMoreMessages={loadMoreMessages}
             onSendMessage={async (content) => {
               await sendMessage(content);
             }}
