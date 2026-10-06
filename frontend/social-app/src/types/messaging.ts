@@ -31,3 +31,8 @@ export interface MessagesRead {
   readerUserId: string;
   messageIds: string[];
 }
+
+export interface UserTypingEvent {
+  conversationId: string;
+  userId: string;
+}

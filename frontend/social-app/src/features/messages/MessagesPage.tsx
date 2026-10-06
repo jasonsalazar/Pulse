@@ -23,6 +23,9 @@ export default function MessagesPage() {
     isConnected,
     connectionStatus,
     error,
+    notifyTyping,
+    notifyStoppedTyping,
+    isUserTyping,
     loadMoreMessages,
     setActiveConversation,
     sendMessage,
@@ -52,6 +55,10 @@ export default function MessagesPage() {
     setSearchParams({});
     setActiveConversation(null);
   };
+
+  const isOtherUserTyping = activeConversation
+    ? isUserTyping(activeConversation.conversationId)
+    : false;
 
   useEffect(() => {
     if (!conversationFromUrl || activeConversationId === conversationFromUrl) {
@@ -119,6 +126,21 @@ export default function MessagesPage() {
             isConnected={isConnected}
             connectionStatus={connectionStatus}
             error={error}
+            onTypingStart={() => {
+              if (activeConversation) {
+                notifyTyping(activeConversation.conversationId).catch(
+                  () => undefined,
+                );
+              }
+            }}
+            onTypingStop={() => {
+              if (activeConversation) {
+                notifyStoppedTyping(activeConversation.conversationId).catch(
+                  () => undefined,
+                );
+              }
+            }}
+            isOtherUserTyping={isOtherUserTyping}
             onLoadMoreMessages={loadMoreMessages}
             onSendMessage={async (content) => {
               await sendMessage(content);

@@ -5,7 +5,11 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 
-import type { Message, MessagesRead } from "../types/messaging";
+import type {
+  Message,
+  MessagesRead,
+  UserTypingEvent,
+} from "../types/messaging";
 
 const SIGNALR_URL = "http://192.168.1.12:5000/hubs/chat";
 
@@ -20,6 +24,8 @@ export type SignalRConnectionStatus =
 type ConnectionStatusHandler = (status: SignalRConnectionStatus) => void;
 
 type MessagesReadHandler = (result: MessagesRead) => void;
+
+type UserTypingHandler = (event: UserTypingEvent) => void;
 
 const connectionStatusHandlers = new Set<ConnectionStatusHandler>();
 
@@ -164,4 +170,48 @@ export async function markConversationAsReadViaSignalR(
   }
 
   await hubConnection.invoke("MarkConversationAsRead", conversationId);
+}
+
+export function onUserTyping(handler: UserTypingHandler): () => void {
+  const hubConnection = getSignalRConnection();
+  const callback = (event: UserTypingEvent) => {
+    handler(event);
+  };
+
+  hubConnection.on("userTyping", callback);
+
+  return () => {
+    hubConnection.off("userTyping", callback);
+  };
+}
+
+export function onUserStoppedTyping(handler: UserTypingHandler): () => void {
+  const hubConnection = getSignalRConnection();
+  const callback = (event: UserTypingEvent) => {
+    handler(event);
+  };
+
+  hubConnection.on("userStoppedTyping", callback);
+
+  return () => {
+    hubConnection.off("userStoppedTyping", callback);
+  };
+}
+
+export async function startTyping(conversationId: string): Promise<void> {
+  const hubConnection = getSignalRConnection();
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    return;
+  }
+
+  await hubConnection.send("StartTyping", conversationId);
+}
+
+export async function stopTyping(conversationId: string): Promise<void> {
+  const hubConnection = getSignalRConnection();
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    return;
+  }
+
+  await hubConnection.send("StopTyping", conversationId);
 }

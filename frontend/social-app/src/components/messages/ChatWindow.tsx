@@ -24,6 +24,10 @@ interface ChatWindowProps {
     | "reconnecting";
   error: string | null;
 
+  onTypingStart?: () => void;
+  onTypingStop?: () => void;
+  isOtherUserTyping: boolean;
+
   onLoadMoreMessages: () => Promise<void>;
   onSendMessage: (content: string) => Promise<void>;
   onBack?: () => void;
@@ -38,6 +42,9 @@ export default function ChatWindow({
   hasMoreMessages,
   connectionStatus,
   error,
+  onTypingStart,
+  onTypingStop,
+  isOtherUserTyping,
   onLoadMoreMessages,
   onSendMessage,
   onBack,
@@ -201,9 +208,17 @@ export default function ChatWindow({
         <div ref={messagesEndRef} />
       </div>
 
+      {isOtherUserTyping && (
+        <div className="typing-indicator" aria-live="polite">
+          <span>{conversation?.otherDisplayName} is typing</span>
+        </div>
+      )}
+
       <MessageComposer
         onSend={onSendMessage}
         disabled={connectionStatus !== "connected"}
+        onTypingStart={onTypingStart}
+        onTypingStop={onTypingStop}
       />
     </section>
   );

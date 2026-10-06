@@ -24,6 +24,10 @@ import {
   type SignalRConnectionStatus,
   onMessagesRead,
   markConversationAsReadViaSignalR,
+  onUserTyping,
+  onUserStoppedTyping,
+  startTyping,
+  stopTyping,
 } from "../services/signalRService";
 
 import type { Conversation, Message } from "../types/messaging";
@@ -41,6 +45,11 @@ interface MessagingContextValue {
   connectionStatus: SignalRConnectionStatus;
   hasMoreMessages: boolean;
   isLoadingMoreMessages: boolean;
+
+  typingUserIds: Record<string, string[]>;
+  notifyTyping: (conversationId: string) => Promise<void>;
+  notifyStoppedTyping: (conversationId: string) => Promise<void>;
+  isUserTyping: (conversationId: string) => boolean;
 
   setActiveConversation: (conversationId: string | null) => Promise<void>;
   loadConversations: () => Promise<void>;
@@ -72,6 +81,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
   const [messagePage, setMessagePage] = useState(1);
+  const [typingUserIds, setTypingUserIds] = useState<Record<string, string[]>>(
+    {},
+  );
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] =
@@ -316,6 +328,20 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
     [activeConversationId, connectionStatus],
   );
 
+  const notifyTyping = useCallback(async (conversationId: string) => {
+    await startTyping(conversationId);
+  }, []);
+
+  const notifyStoppedTyping = useCallback(async (conversationId: string) => {
+    await stopTyping(conversationId);
+  }, []);
+
+  const isUserTyping = useCallback(
+    (conversationId: string): boolean =>
+      (typingUserIds[conversationId] ?? []).length > 0,
+    [typingUserIds],
+  );
+
   useEffect(() => {
     if (isAuthLoading) {
       return;
@@ -407,10 +433,50 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
     const unsubscribeConnectionStatus =
       onConnectionStatusChanged(setConnectionStatus);
 
+    const unsubscribeTyping = onUserTyping((event) => {
+      setTypingUserIds((current) => {
+        const users = current[event.conversationId] ?? [];
+
+        if (users.includes(event.userId)) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [event.conversationId]: [...users, event.userId],
+        };
+      });
+    });
+
+    const unsubscribeStoppedTyping = onUserStoppedTyping((event) => {
+      setTypingUserIds((current) => {
+        const users = current[event.conversationId] ?? [];
+
+        const remaining = users.filter((userId) => userId !== event.userId);
+
+        if (remaining.length === 0) {
+          const next = {
+            ...current,
+          };
+
+          delete next[event.conversationId];
+
+          return next;
+        }
+
+        return {
+          ...current,
+          [event.conversationId]: remaining,
+        };
+      });
+    });
+
     return () => {
       unsubscribeMessage();
       unsubscribeMessagesRead();
       unsubscribeConnectionStatus();
+      unsubscribeTyping();
+      unsubscribeStoppedTyping();
     };
   }, [activeConversationId, markAsRead]);
 
@@ -439,6 +505,12 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       connectionStatus,
       hasMoreMessages,
       isLoadingMoreMessages,
+
+      typingUserIds,
+      notifyTyping,
+      notifyStoppedTyping,
+      isUserTyping,
+
       loadMoreMessages,
       setActiveConversation,
       loadConversations,
@@ -459,6 +531,12 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       connectionStatus,
       hasMoreMessages,
       isLoadingMoreMessages,
+
+      typingUserIds,
+      notifyTyping,
+      notifyStoppedTyping,
+      isUserTyping,
+
       loadMoreMessages,
       setActiveConversation,
       loadConversations,

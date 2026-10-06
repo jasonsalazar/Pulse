@@ -111,6 +111,76 @@ public class ChatHub(
                 Context.ConnectionAborted);
     }
 
+    public async Task StartTyping(Guid conversationId)
+    {
+        var currentUserId = GetCurrentUserId();
+
+        var conversation =
+            await _conversationRepository.GetByIdAsync(
+                conversationId,
+                Context.ConnectionAborted);
+
+        if (conversation is null)
+        {
+            throw new HubException(
+                "Conversation not found.");
+        }
+
+        if (!conversation.ContainsUser(currentUserId))
+        {
+            throw new HubException(
+                "You do not belong to this conversation.");
+        }
+
+        var recipientId =
+            conversation.GetOtherUserId(currentUserId);
+
+        await Clients.User(recipientId.ToString())
+            .SendAsync(
+                "userTyping",
+                new
+                {
+                    ConversationId = conversationId,
+                    UserId = currentUserId
+                },
+                Context.ConnectionAborted);
+    }
+
+    public async Task StopTyping(Guid conversationId)
+    {
+        var currentUserId = GetCurrentUserId();
+
+        var conversation =
+            await _conversationRepository.GetByIdAsync(
+                conversationId,
+                Context.ConnectionAborted);
+
+        if (conversation is null)
+        {
+            throw new HubException(
+                "Conversation not found.");
+        }
+
+        if (!conversation.ContainsUser(currentUserId))
+        {
+            throw new HubException(
+                "You do not belong to this conversation.");
+        }
+
+        var recipientId =
+            conversation.GetOtherUserId(currentUserId);
+
+        await Clients.User(recipientId.ToString())
+            .SendAsync(
+                "userStoppedTyping",
+                new
+                {
+                    ConversationId = conversationId,
+                    UserId = currentUserId
+                },
+                Context.ConnectionAborted);
+    }
+
     private Guid GetCurrentUserId()
     {
         var userIdClaim =
