@@ -40,3 +40,8 @@ export interface UserTypingEvent {
 export interface UserPresenceEvent {
   userId: string;
 }
+
+export interface UserOfflineEvent {
+  userId: string;
+  lastSeen: string;
+}

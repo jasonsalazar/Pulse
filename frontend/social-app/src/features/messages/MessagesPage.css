@@ -74,8 +74,4 @@
   .messages-page__chat--mobile-hidden {
     display: none;
   }
-
-  .chat-window__back {
-    display: block;
-  }
 }

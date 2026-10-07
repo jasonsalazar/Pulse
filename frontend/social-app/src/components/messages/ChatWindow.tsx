@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { Conversation, Message } from "../../types/messaging";
 
@@ -8,6 +8,7 @@ import MessageBubble from "./MessageBubble";
 import MessageComposer from "./MessageComposer";
 
 import "./ChatWindow.css";
+import { formatLastSeen } from "./presenceUtils";
 
 interface ChatWindowProps {
   conversation: Conversation | null;
@@ -28,6 +29,7 @@ interface ChatWindowProps {
   onTypingStop?: () => void;
   isOtherUserTyping: boolean;
   isOtherUserOnline: boolean;
+  otherUserLastSeen: string | null;
 
   onLoadMoreMessages: () => Promise<void>;
   onSendMessage: (content: string) => Promise<void>;
@@ -47,6 +49,7 @@ export default function ChatWindow({
   onTypingStop,
   isOtherUserTyping,
   isOtherUserOnline,
+  otherUserLastSeen,
   onLoadMoreMessages,
   onSendMessage,
   onBack,
@@ -55,11 +58,27 @@ export default function ChatWindow({
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const previousMessageCount = useRef(0);
 
+  const [, setPresenceTick] = useState(0);
+
   // useEffect(() => {
   //   messagesEndRef.current?.scrollIntoView({
   //     behavior: "smooth",
   //   });
   // }, [messages]);
+
+  useEffect(() => {
+    if (isOtherUserOnline) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setPresenceTick((value) => value + 1);
+    }, 60_000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [isOtherUserOnline]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -169,7 +188,9 @@ export default function ChatWindow({
             aria-hidden="true"
           />
 
-          <span>{isOtherUserOnline ? "Online" : "Offline"}</span>
+          <span>
+            {isOtherUserOnline ? "Online" : formatLastSeen(otherUserLastSeen)}
+          </span>
         </div>
 
         <div

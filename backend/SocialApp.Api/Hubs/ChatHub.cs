@@ -208,16 +208,20 @@ public class ChatHub(
     {
         var userId = GetCurrentUserId();
 
-        var becameOffline =
+        var lastSeen =
             await _presenceService.UserDisconnectedAsync(
                 userId);
 
-        if (becameOffline)
+        if (lastSeen.HasValue)
         {
             await Clients.Others
                 .SendAsync(
                     "userOffline",
-                    userId);
+                    new
+                    {
+                        UserId = userId,
+                        LastSeen = lastSeen.Value
+                    });
         }
 
         await base.OnDisconnectedAsync(exception);
@@ -227,6 +231,18 @@ public class ChatHub(
     {
         return Task.FromResult(
             _presenceService.IsOnline(userId));
+    }
+
+    public Task<DateTimeOffset?> GetUserLastSeen(Guid userId)
+    {
+        if (_presenceService.IsOnline(userId))
+        {
+            return Task.FromResult<DateTimeOffset?>(
+                null);
+        }
+
+        return Task.FromResult(
+            _presenceService.GetLastSeen(userId));
     }
 
     private Guid GetCurrentUserId()

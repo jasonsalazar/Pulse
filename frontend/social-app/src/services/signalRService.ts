@@ -8,10 +8,11 @@ import {
 import type {
   Message,
   MessagesRead,
+  UserOfflineEvent,
   UserTypingEvent,
 } from "../types/messaging";
 
-const SIGNALR_URL = "http://192.168.1.12:5000/hubs/chat";
+const SIGNALR_URL = "http://192.168.1.2:5000/hubs/chat";
 
 let connection: HubConnection | null = null;
 
@@ -28,6 +29,8 @@ type MessagesReadHandler = (result: MessagesRead) => void;
 type UserTypingHandler = (event: UserTypingEvent) => void;
 
 type UserPresenceHandler = (userId: string) => void;
+
+type UserOfflineHandler = (event: UserOfflineEvent) => void;
 
 const connectionStatusHandlers = new Set<ConnectionStatusHandler>();
 
@@ -231,10 +234,10 @@ export function onUserOnline(handler: UserPresenceHandler): () => void {
   };
 }
 
-export function onUserOffline(handler: UserPresenceHandler): () => void {
+export function onUserOffline(handler: UserOfflineHandler): () => void {
   const hubConnection = getSignalRConnection();
-  const callback = (userId: string) => {
-    handler(userId);
+  const callback = (event: UserOfflineEvent) => {
+    handler(event);
   };
 
   hubConnection.on("userOffline", callback);
@@ -251,4 +254,13 @@ export async function isUserOnline(userId: string): Promise<boolean> {
   }
 
   return hubConnection.invoke<boolean>("IsUserOnline", userId);
+}
+
+export async function getUserLastSeen(userId: string): Promise<string | null> {
+  const hubConnection = getSignalRConnection();
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    return null;
+  }
+
+  return hubConnection.invoke<string | null>("GetUserLastSeen", userId);
 }

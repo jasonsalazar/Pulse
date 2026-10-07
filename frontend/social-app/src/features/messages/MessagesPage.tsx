@@ -4,10 +4,8 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useMessaging } from "../../context/MessagingContext";
 
-import ConversationList from "../../components/messages/ConversationList";
-import ChatWindow from "../../components/messages/ChatWindow";
-
 import "./MessagesPage.css";
+import { ChatWindow, ConversationList } from "../../components/messages";
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -31,6 +29,7 @@ export default function MessagesPage() {
     sendMessage,
     onlineUserIds,
     checkUserOnline,
+    lastSeenByUserId,
   } = useMessaging();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,6 +65,10 @@ export default function MessagesPage() {
     ? onlineUserIds.has(activeConversation.otherUserId)
     : false;
 
+  const otherUserLastSeen = activeConversation
+    ? (lastSeenByUserId[activeConversation.otherUserId] ?? null)
+    : null;
+
   useEffect(() => {
     if (!conversationFromUrl || activeConversationId === conversationFromUrl) {
       return;
@@ -80,20 +83,20 @@ export default function MessagesPage() {
     }
 
     setActiveConversation(conversationFromUrl).catch(() => undefined);
-  }, [
-    conversationFromUrl,
-    activeConversationId,
-    conversations,
-    setActiveConversation,
-  ]);
 
-  useEffect(() => {
     if (!activeConversation) {
       return;
     }
 
     checkUserOnline(activeConversation.otherUserId).catch(() => undefined);
-  }, [activeConversation, checkUserOnline, isOtherUserOnline, onlineUserIds]);
+  }, [
+    conversationFromUrl,
+    activeConversationId,
+    conversations,
+    setActiveConversation,
+    activeConversation,
+    checkUserOnline,
+  ]);
 
   if (!user) {
     return null;
@@ -157,6 +160,7 @@ export default function MessagesPage() {
             }}
             isOtherUserTyping={isOtherUserTyping}
             isOtherUserOnline={isOtherUserOnline}
+            otherUserLastSeen={otherUserLastSeen}
             onLoadMoreMessages={loadMoreMessages}
             onSendMessage={async (content) => {
               await sendMessage(content);

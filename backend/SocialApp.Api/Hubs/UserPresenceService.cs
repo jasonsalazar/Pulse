@@ -6,6 +6,9 @@ public class UserPresenceService : IUserPresenceService
 {
     private readonly ConcurrentDictionary<Guid, int> _connections = new();
 
+    private readonly ConcurrentDictionary<Guid, DateTimeOffset> _lastSeen =
+        new();
+
     public Task<bool> UserConnectedAsync(Guid userId)
     {
         var connectionCount =
@@ -14,11 +17,19 @@ public class UserPresenceService : IUserPresenceService
                 1,
                 (_, count) => count + 1);
 
+        if (connectionCount == 1)
+        {
+            _lastSeen.TryRemove(
+                userId,
+                out _);
+        }
+
         return Task.FromResult(
             connectionCount == 1);
     }
 
-    public Task<bool> UserDisconnectedAsync(Guid userId)
+    public Task<DateTimeOffset?> UserDisconnectedAsync(
+        Guid userId)
     {
         while (true)
         {
@@ -26,7 +37,8 @@ public class UserPresenceService : IUserPresenceService
                     userId,
                     out var currentCount))
             {
-                return Task.FromResult(false);
+                return Task.FromResult<DateTimeOffset?>(
+                    null);
             }
 
             if (currentCount <= 1)
@@ -38,7 +50,14 @@ public class UserPresenceService : IUserPresenceService
 
                 if (removed)
                 {
-                    return Task.FromResult(true);
+                    var lastSeen =
+                        DateTimeOffset.UtcNow;
+
+                    _lastSeen[userId] =
+                        lastSeen;
+
+                    return Task.FromResult<DateTimeOffset?>(
+                        lastSeen);
                 }
 
                 continue;
@@ -49,7 +68,8 @@ public class UserPresenceService : IUserPresenceService
                     currentCount - 1,
                     currentCount))
             {
-                return Task.FromResult(false);
+                return Task.FromResult<DateTimeOffset?>(
+                    null);
             }
         }
     }
@@ -57,6 +77,16 @@ public class UserPresenceService : IUserPresenceService
     public bool IsOnline(Guid userId)
     {
         return _connections.ContainsKey(userId);
+    }
+
+    public DateTimeOffset? GetLastSeen(
+        Guid userId)
+    {
+        return _lastSeen.TryGetValue(
+            userId,
+            out var lastSeen)
+            ? lastSeen
+            : null;
     }
 
     public IReadOnlyCollection<Guid> GetOnlineUsers()

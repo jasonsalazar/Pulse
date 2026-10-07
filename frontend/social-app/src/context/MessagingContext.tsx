@@ -31,6 +31,7 @@ import {
   onUserOnline,
   onUserOffline,
   isUserOnline,
+  getUserLastSeen,
 } from "../services/signalRService";
 
 import type { Conversation, Message } from "../types/messaging";
@@ -56,6 +57,7 @@ interface MessagingContextValue {
 
   onlineUserIds: Set<string>;
   checkUserOnline: (userId: string) => Promise<boolean>;
+  lastSeenByUserId: Record<string, string>;
 
   setActiveConversation: (conversationId: string | null) => Promise<void>;
   loadConversations: () => Promise<void>;
@@ -93,6 +95,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const [lastSeenByUserId, setLastSeenByUserId] = useState<
+    Record<string, string>
+  >({});
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] =
@@ -366,7 +371,30 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       return next;
     });
 
-    return online;
+    if (online) {
+      setLastSeenByUserId((current) => {
+        const next = {
+          ...current,
+        };
+
+        delete next[userId];
+
+        return next;
+      });
+
+      return true;
+    }
+
+    const lastSeen = await getUserLastSeen(userId);
+
+    if (lastSeen) {
+      setLastSeenByUserId((current) => ({
+        ...current,
+        [userId]: lastSeen,
+      }));
+    }
+
+    return false;
   }, []);
 
   useEffect(() => {
@@ -501,17 +529,36 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
     const unsubscribeUserOnline = onUserOnline((userId) => {
       setOnlineUserIds((current) => {
         const next = new Set(current);
+
         next.add(userId);
+
+        return next;
+      });
+
+      setLastSeenByUserId((current) => {
+        const next = {
+          ...current,
+        };
+
+        delete next[userId];
+
         return next;
       });
     });
 
-    const unsubscribeUserOffline = onUserOffline((userId) => {
+    const unsubscribeUserOffline = onUserOffline((event) => {
       setOnlineUserIds((current) => {
         const next = new Set(current);
-        next.delete(userId);
+
+        next.delete(event.userId);
+
         return next;
       });
+
+      setLastSeenByUserId((current) => ({
+        ...current,
+        [event.userId]: event.lastSeen,
+      }));
     });
 
     return () => {
@@ -531,6 +578,8 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       setActiveConversationId(null);
       setMessages([]);
       setOnlineUserIds(new Set());
+      setLastSeenByUserId({});
+      setError(null);
 
       return;
     }
@@ -559,6 +608,7 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
 
       onlineUserIds,
       checkUserOnline,
+      lastSeenByUserId,
 
       loadMoreMessages,
       setActiveConversation,
@@ -588,6 +638,7 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
 
       onlineUserIds,
       checkUserOnline,
+      lastSeenByUserId,
 
       loadMoreMessages,
       setActiveConversation,

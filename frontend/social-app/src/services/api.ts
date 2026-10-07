@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://192.168.1.12:5000/api";
+const API_BASE_URL = "http://192.168.1.2:5000/api";
 
 export async function apiRequest<T>(
   endpoint: string,

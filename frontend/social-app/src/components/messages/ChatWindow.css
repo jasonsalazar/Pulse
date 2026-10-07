@@ -65,6 +65,12 @@
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .chat-window__back {
+    display: block;
+  }
+}
+
 .chat-window__messages {
   flex: 1;
   min-height: 0;
