@@ -93,3 +93,17 @@
 .conversation-list__empty p {
   margin: 0;
 }
+
+.presence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+  display: inline-block;
+  margin-left: var(--space-2);
+}
+
+.presence-dot-online {
+  background: var(--color-success);
+}

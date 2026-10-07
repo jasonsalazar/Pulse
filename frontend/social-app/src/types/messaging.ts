@@ -36,3 +36,7 @@ export interface UserTypingEvent {
   conversationId: string;
   userId: string;
 }
+
+export interface UserPresenceEvent {
+  userId: string;
+}

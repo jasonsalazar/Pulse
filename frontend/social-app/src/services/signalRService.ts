@@ -27,6 +27,8 @@ type MessagesReadHandler = (result: MessagesRead) => void;
 
 type UserTypingHandler = (event: UserTypingEvent) => void;
 
+type UserPresenceHandler = (userId: string) => void;
+
 const connectionStatusHandlers = new Set<ConnectionStatusHandler>();
 
 function notifyConnectionStatus(status: SignalRConnectionStatus) {
@@ -214,4 +216,39 @@ export async function stopTyping(conversationId: string): Promise<void> {
   }
 
   await hubConnection.send("StopTyping", conversationId);
+}
+
+export function onUserOnline(handler: UserPresenceHandler): () => void {
+  const hubConnection = getSignalRConnection();
+  const callback = (userId: string) => {
+    handler(userId);
+  };
+
+  hubConnection.on("userOnline", callback);
+
+  return () => {
+    hubConnection.off("userOnline", callback);
+  };
+}
+
+export function onUserOffline(handler: UserPresenceHandler): () => void {
+  const hubConnection = getSignalRConnection();
+  const callback = (userId: string) => {
+    handler(userId);
+  };
+
+  hubConnection.on("userOffline", callback);
+
+  return () => {
+    hubConnection.off("userOffline", callback);
+  };
+}
+
+export async function isUserOnline(userId: string): Promise<boolean> {
+  const hubConnection = getSignalRConnection();
+  if (hubConnection.state !== HubConnectionState.Connected) {
+    return false;
+  }
+
+  return hubConnection.invoke<boolean>("IsUserOnline", userId);
 }

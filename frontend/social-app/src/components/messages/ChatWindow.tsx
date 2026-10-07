@@ -27,6 +27,7 @@ interface ChatWindowProps {
   onTypingStart?: () => void;
   onTypingStop?: () => void;
   isOtherUserTyping: boolean;
+  isOtherUserOnline: boolean;
 
   onLoadMoreMessages: () => Promise<void>;
   onSendMessage: (content: string) => Promise<void>;
@@ -45,6 +46,7 @@ export default function ChatWindow({
   onTypingStart,
   onTypingStop,
   isOtherUserTyping,
+  isOtherUserOnline,
   onLoadMoreMessages,
   onSendMessage,
   onBack,
@@ -157,6 +159,17 @@ export default function ChatWindow({
           <h2>{conversation.otherDisplayName}</h2>
 
           <span>@{conversation.otherUsername}</span>
+        </div>
+
+        <div className="chat-user-status">
+          <span
+            className={`presence-dot ${
+              isOtherUserOnline ? "presence-dot-online" : ""
+            }`}
+            aria-hidden="true"
+          />
+
+          <span>{isOtherUserOnline ? "Online" : "Offline"}</span>
         </div>
 
         <div

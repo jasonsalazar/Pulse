@@ -29,6 +29,8 @@ export default function MessagesPage() {
     loadMoreMessages,
     setActiveConversation,
     sendMessage,
+    onlineUserIds,
+    checkUserOnline,
   } = useMessaging();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -60,6 +62,10 @@ export default function MessagesPage() {
     ? isUserTyping(activeConversation.conversationId)
     : false;
 
+  const isOtherUserOnline = activeConversation
+    ? onlineUserIds.has(activeConversation.otherUserId)
+    : false;
+
   useEffect(() => {
     if (!conversationFromUrl || activeConversationId === conversationFromUrl) {
       return;
@@ -80,6 +86,14 @@ export default function MessagesPage() {
     conversations,
     setActiveConversation,
   ]);
+
+  useEffect(() => {
+    if (!activeConversation) {
+      return;
+    }
+
+    checkUserOnline(activeConversation.otherUserId).catch(() => undefined);
+  }, [activeConversation, checkUserOnline, isOtherUserOnline, onlineUserIds]);
 
   if (!user) {
     return null;
@@ -108,6 +122,7 @@ export default function MessagesPage() {
             activeConversationId={activeConversationId}
             isLoading={isLoadingConversations}
             onSelect={handleSelectConversation}
+            onlineUserIds={onlineUserIds}
           />
         </aside>
 
@@ -141,6 +156,7 @@ export default function MessagesPage() {
               }
             }}
             isOtherUserTyping={isOtherUserTyping}
+            isOtherUserOnline={isOtherUserOnline}
             onLoadMoreMessages={loadMoreMessages}
             onSendMessage={async (content) => {
               await sendMessage(content);

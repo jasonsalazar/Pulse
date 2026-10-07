@@ -208,3 +208,24 @@
     content: "...";
   }
 }
+
+.chat-user-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.presence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.presence-dot-online {
+  background: var(--color-success);
+}

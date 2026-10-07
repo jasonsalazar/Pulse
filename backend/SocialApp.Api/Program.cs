@@ -96,6 +96,8 @@ builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 
+builder.Services.AddSingleton<IUserPresenceService, UserPresenceService>();
+
 var app = builder.Build();
 
 app.UseExceptionHandler(exceptionApp =>

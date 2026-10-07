@@ -28,6 +28,9 @@ import {
   onUserStoppedTyping,
   startTyping,
   stopTyping,
+  onUserOnline,
+  onUserOffline,
+  isUserOnline,
 } from "../services/signalRService";
 
 import type { Conversation, Message } from "../types/messaging";
@@ -50,6 +53,9 @@ interface MessagingContextValue {
   notifyTyping: (conversationId: string) => Promise<void>;
   notifyStoppedTyping: (conversationId: string) => Promise<void>;
   isUserTyping: (conversationId: string) => boolean;
+
+  onlineUserIds: Set<string>;
+  checkUserOnline: (userId: string) => Promise<boolean>;
 
   setActiveConversation: (conversationId: string | null) => Promise<void>;
   loadConversations: () => Promise<void>;
@@ -83,6 +89,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
   const [messagePage, setMessagePage] = useState(1);
   const [typingUserIds, setTypingUserIds] = useState<Record<string, string[]>>(
     {},
+  );
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(
+    () => new Set(),
   );
 
   const [isConnected, setIsConnected] = useState(false);
@@ -342,6 +351,24 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
     [typingUserIds],
   );
 
+  const checkUserOnline = useCallback(async (userId: string) => {
+    const online = await isUserOnline(userId);
+
+    setOnlineUserIds((current) => {
+      const next = new Set(current);
+
+      if (online) {
+        next.add(userId);
+      } else {
+        next.delete(userId);
+      }
+
+      return next;
+    });
+
+    return online;
+  }, []);
+
   useEffect(() => {
     if (isAuthLoading) {
       return;
@@ -471,12 +498,30 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       });
     });
 
+    const unsubscribeUserOnline = onUserOnline((userId) => {
+      setOnlineUserIds((current) => {
+        const next = new Set(current);
+        next.add(userId);
+        return next;
+      });
+    });
+
+    const unsubscribeUserOffline = onUserOffline((userId) => {
+      setOnlineUserIds((current) => {
+        const next = new Set(current);
+        next.delete(userId);
+        return next;
+      });
+    });
+
     return () => {
       unsubscribeMessage();
       unsubscribeMessagesRead();
       unsubscribeConnectionStatus();
       unsubscribeTyping();
       unsubscribeStoppedTyping();
+      unsubscribeUserOnline();
+      unsubscribeUserOffline();
     };
   }, [activeConversationId, markAsRead]);
 
@@ -485,6 +530,7 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       setConversations([]);
       setActiveConversationId(null);
       setMessages([]);
+      setOnlineUserIds(new Set());
 
       return;
     }
@@ -511,6 +557,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       notifyStoppedTyping,
       isUserTyping,
 
+      onlineUserIds,
+      checkUserOnline,
+
       loadMoreMessages,
       setActiveConversation,
       loadConversations,
@@ -536,6 +585,9 @@ export function MessagingProvider({ children }: MessagingProviderProps) {
       notifyTyping,
       notifyStoppedTyping,
       isUserTyping,
+
+      onlineUserIds,
+      checkUserOnline,
 
       loadMoreMessages,
       setActiveConversation,

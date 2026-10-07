@@ -8,6 +8,7 @@ interface ConversationListProps {
   conversations: Conversation[];
   activeConversationId: string | null;
   isLoading: boolean;
+  onlineUserIds: Set<string>;
   onSelect: (conversationId: string) => void;
 }
 
@@ -15,6 +16,7 @@ export default function ConversationList({
   conversations,
   activeConversationId,
   isLoading,
+  onlineUserIds,
   onSelect,
 }: ConversationListProps) {
   if (isLoading) {
@@ -70,6 +72,13 @@ export default function ConversationList({
               <div className="conversation-list__top">
                 <span className="conversation-list__name">
                   {conversation.otherDisplayName}
+                  <span
+                    className={`presence-dot ${
+                      onlineUserIds.has(conversation.otherUserId)
+                        ? "presence-dot-online"
+                        : ""
+                    }`}
+                  />
                 </span>
 
                 {formattedTime && (

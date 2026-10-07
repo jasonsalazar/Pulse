@@ -12,13 +12,16 @@ namespace SocialApp.Api.Hubs;
 [Authorize]
 public class ChatHub(
     IMediator mediator,
-    IConversationRepository conversationRepository) : Hub
+    IConversationRepository conversationRepository,
+    IUserPresenceService presenceService) : Hub
 {
     private readonly IMediator _mediator = mediator;
 
     private readonly IConversationRepository
         _conversationRepository =
             conversationRepository;
+
+    private readonly IUserPresenceService _presenceService = presenceService;
 
     public async Task<MessageResponse> SendMessage(
         Guid conversationId,
@@ -179,6 +182,51 @@ public class ChatHub(
                     UserId = currentUserId
                 },
                 Context.ConnectionAborted);
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        var userId = GetCurrentUserId();
+
+        var becameOnline =
+            await _presenceService.UserConnectedAsync(
+                userId);
+
+        if (becameOnline)
+        {
+            await Clients.Others
+                .SendAsync(
+                    "userOnline",
+                    userId,
+                    Context.ConnectionAborted);
+        }
+
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        var userId = GetCurrentUserId();
+
+        var becameOffline =
+            await _presenceService.UserDisconnectedAsync(
+                userId);
+
+        if (becameOffline)
+        {
+            await Clients.Others
+                .SendAsync(
+                    "userOffline",
+                    userId);
+        }
+
+        await base.OnDisconnectedAsync(exception);
+    }
+
+    public Task<bool> IsUserOnline(Guid userId)
+    {
+        return Task.FromResult(
+            _presenceService.IsOnline(userId));
     }
 
     private Guid GetCurrentUserId()
