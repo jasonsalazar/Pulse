@@ -20,6 +20,13 @@ public interface IUserRepository
         string username,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<User>> SearchAsync(
+        string searchTerm,
+        Guid currentUserId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
+
     Task AddAsync(
         User user,
         CancellationToken cancellationToken = default);

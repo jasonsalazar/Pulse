@@ -50,6 +50,32 @@ public class UserRepository(AppDbContext context) : IUserRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<User>> SearchAsync(
+        string searchTerm,
+        Guid currentUserId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var normalizedSearchTerm =
+            searchTerm.Trim().ToLower();
+
+        return await _context.Users
+            .AsNoTracking()
+            .Where(user =>
+                user.Id != currentUserId &&
+                (
+                    user.Username.ToLower()
+                        .Contains(normalizedSearchTerm) ||
+                    user.DisplayName.ToLower()
+                        .Contains(normalizedSearchTerm)
+                ))
+            .OrderBy(user => user.Username)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<User?> GetByUsernameAsync(
         string username,
         CancellationToken cancellationToken = default)

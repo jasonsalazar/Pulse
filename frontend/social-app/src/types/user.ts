@@ -30,3 +30,10 @@ export interface UserFollow {
   displayName: string;
   profileImageUrl: string | null;
 }
+
+export interface UserSearchResult {
+  userId: string;
+  username: string;
+  displayName: string;
+  profileImageUrl: string | null;
+}

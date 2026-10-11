@@ -5,7 +5,12 @@ import { useAuth } from "../../context/AuthContext";
 import { useMessaging } from "../../context/MessagingContext";
 
 import "./MessagesPage.css";
-import { ChatWindow, ConversationList } from "../../components/messages";
+import {
+  ChatWindow,
+  ConversationList,
+  UserSearch,
+} from "../../components/messages";
+import type { UserSearchResult } from "../../types/user";
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -30,6 +35,7 @@ export default function MessagesPage() {
     onlineUserIds,
     checkUserOnline,
     lastSeenByUserId,
+    startConversation,
   } = useMessaging();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +49,14 @@ export default function MessagesPage() {
       ) ?? null,
     [conversations, activeConversationId],
   );
+
+  const handleSelectSearchUser = async (user: UserSearchResult) => {
+    const conversation = await startConversation(user.userId);
+
+    setSearchParams({
+      conversation: conversation.conversationId,
+    });
+  };
 
   const handleSelectConversation = async (conversationId: string) => {
     await setActiveConversation(conversationId);
@@ -120,6 +134,8 @@ export default function MessagesPage() {
               : ""
           }`}
         >
+          <UserSearch onSelectUser={handleSelectSearchUser} />
+
           <ConversationList
             conversations={conversations}
             activeConversationId={activeConversationId}

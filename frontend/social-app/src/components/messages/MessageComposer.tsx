@@ -33,6 +33,8 @@ export default function MessageComposer({
 
   const isTypingRef = useRef(false);
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const notifyTypingActivity = () => {
     if (!isTypingRef.current) {
       isTypingRef.current = true;
@@ -71,6 +73,10 @@ export default function MessageComposer({
       await onSend(trimmed);
 
       setContent("");
+
+      requestAnimationFrame(() => {
+        formRef.current?.querySelector("textarea")?.focus();
+      });
     } finally {
       setIsSending(false);
     }
@@ -103,6 +109,9 @@ export default function MessageComposer({
 
   useEffect(() => {
     return () => {
+      setContent("");
+      setIsSending(false);
+
       if (typingTimeoutRef.current !== null) {
         window.clearTimeout(typingTimeoutRef.current);
       }
@@ -114,7 +123,7 @@ export default function MessageComposer({
   }, [onTypingStop]);
 
   return (
-    <form className="message-composer" onSubmit={handleSubmit}>
+    <form ref={formRef} className="message-composer" onSubmit={handleSubmit}>
       <TextArea
         value={content}
         onChange={handleChange}

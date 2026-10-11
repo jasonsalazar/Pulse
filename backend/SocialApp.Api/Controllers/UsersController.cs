@@ -10,6 +10,7 @@ using SocialApp.Application.Users.Commands.UpdateProfile;
 using SocialApp.Application.Users.DTOs;
 using SocialApp.Application.Users.Queries.GetMyProfile;
 using SocialApp.Application.Users.Queries.GetUserProfile;
+using SocialApp.Application.Users.Queries.SearchUsers;
 
 namespace SocialApp.Api.Controllers;
 
@@ -227,6 +228,31 @@ public class UsersController(ISender sender) : ControllerBase
         {
             return NotFound();
         }
+    }
+
+    [Authorize]
+    [HttpGet("search")]
+    public async Task<ActionResult<IReadOnlyList<UserSearchResponse>>> Search(
+        [FromQuery] string q,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var currentUserId = GetCurrentUserId();
+
+        if (currentUserId is null)
+        {
+            return Unauthorized();
+        }
+
+        var result =
+            await _sender.Send(
+                new SearchUsersQuery(
+                    currentUserId.Value,
+                    q,
+                    page,
+                    pageSize));
+
+        return Ok(result);
     }
 
     private Guid? GetCurrentUserId()
