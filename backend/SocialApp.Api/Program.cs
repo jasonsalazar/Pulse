@@ -83,9 +83,8 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:3000",
-                "http://192.168.1.11:3000",
-                "http://192.168.1.11:5000")
+                "https://192.168.1.11:3000",
+                "https://192.168.1.11:7000")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

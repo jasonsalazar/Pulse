@@ -145,8 +145,11 @@ export default function ProfilePage() {
   }
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    try {
+      logout();
+    } finally {
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

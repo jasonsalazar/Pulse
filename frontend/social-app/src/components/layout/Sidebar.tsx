@@ -44,8 +44,11 @@ export default function Sidebar() {
   const { totalUnreadCount } = useMessaging();
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    try {
+      logout();
+    } finally {
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

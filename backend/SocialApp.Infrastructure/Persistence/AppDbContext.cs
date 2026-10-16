@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SocialApp.Domain.Authentication;
 using SocialApp.Domain.Comments;
 using SocialApp.Domain.Follows;
 using SocialApp.Domain.Likes;
@@ -26,6 +27,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Conversation> Conversations => Set<Conversation>();
 
     public DbSet<Message> Messages => Set<Message>();
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

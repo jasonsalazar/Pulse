@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialApp.Application.Authentication.Commands.Login;
+using SocialApp.Application.Authentication.Commands.Logout;
+using SocialApp.Application.Authentication.Commands.RefreshToken;
 using SocialApp.Application.Authentication.Commands.RegisterUser;
 using SocialApp.Application.Authentication.DTOs;
 using SocialApp.Application.Authentication.Queries.GetCurrentUser;
@@ -65,7 +67,15 @@ public class AuthController(ISender sender) : ControllerBase
                 command,
                 cancellationToken);
 
-            return Ok(result);
+            SetRefreshTokenCookie(
+                result.RefreshToken,
+                result.RefreshTokenExpiresAt);
+
+            return Ok(new LoginResponse(
+                result.UserId,
+                result.Username,
+                result.Email,
+                result.AccessToken));
         }
         catch (UnauthorizedAccessException exception)
         {
@@ -104,5 +114,101 @@ public class AuthController(ISender sender) : ControllerBase
         {
             return Unauthorized();
         }
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(
+        CancellationToken cancellationToken)
+    {
+        if (!Request.Cookies.TryGetValue(
+                "refreshToken",
+                out var token) ||
+            string.IsNullOrWhiteSpace(token))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var result = await _sender.Send(
+                new RefreshTokenCommand(token),
+                cancellationToken);
+
+            SetRefreshTokenCookie(
+                result.RefreshToken,
+                result.RefreshTokenExpiresAt);
+
+            return Ok(new
+            {
+                accessToken = result.AccessToken,
+                userId = result.UserId
+            });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Response.Cookies.Delete(
+                "refreshToken",
+                GetRefreshCookieOptions());
+
+            return Unauthorized();
+        }
+    }
+
+    [AllowAnonymous]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(
+        CancellationToken cancellationToken)
+    {
+        Request.Cookies.TryGetValue(
+            "refreshToken",
+            out var token);
+
+        try
+        {
+            await _sender.Send(
+                new LogoutCommand(token),
+                cancellationToken);
+        }
+        finally
+        {
+            Response.Cookies.Delete(
+                "refreshToken",
+                GetRefreshCookieOptions());
+        }
+
+        return NoContent();
+    }
+
+    private void SetRefreshTokenCookie(
+        string token,
+        DateTime expiresAt)
+    {
+        Response.Cookies.Append(
+            "refreshToken",
+            token,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Path = "/api/auth",
+                Expires = new DateTimeOffset(
+                    DateTime.SpecifyKind(
+                        expiresAt,
+                        DateTimeKind.Utc)),
+                IsEssential = true
+            });
+    }
+
+    private static CookieOptions GetRefreshCookieOptions()
+    {
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Path = "/api/auth"
+        };
     }
 }

@@ -12,7 +12,7 @@ import type {
   UserTypingEvent,
 } from "../types/messaging";
 
-const SIGNALR_URL = "http://192.168.1.11:5000/hubs/chat";
+const SIGNALR_URL = "https://192.168.1.11:7000/hubs/chat";
 
 let connection: HubConnection | null = null;
 

@@ -83,9 +83,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
   }
 
-  function logout() {
-    localStorage.removeItem("accessToken");
-    setUser(null);
+  async function logout(): Promise<void> {
+    try {
+      await apiRequest<void>("/auth/logout", {
+        method: "POST",
+      });
+    } finally {
+      localStorage.removeItem("accessToken");
+      setUser(null);
+    }
   }
 
   const value: AuthContextType = {

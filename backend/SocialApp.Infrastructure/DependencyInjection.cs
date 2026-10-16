@@ -7,6 +7,7 @@ using SocialApp.Domain.Users;
 using SocialApp.Infrastructure.Authentication;
 using SocialApp.Infrastructure.Persistence;
 using SocialApp.Infrastructure.Persistence.Repositories;
+using SocialApp.Infrastructure.Services;
 
 namespace SocialApp.Infrastructure;
 
@@ -45,6 +46,10 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
 
         services.AddScoped<IJwtService, JwtService>();
+
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         return services;
     }
